@@ -1,0 +1,61 @@
+from IPython.display import Image
+import matplotlib.pyplot as plt
+import numpy as np
+from qutip import *
+from qutip.qip.operations import cnot
+from qutip.qip.circuit import QubitCircuit
+
+#Simulatinng Measure-Z qubits
+
+p00=basis(2,0) #initializaion of the data qubit
+p01=basis(2,1)
+psi_s=(p00+p01).unit()
+t0=tensor(p00,p00,p00,p00,p00)
+t1=tensor(p01,p00,p00,p00,p00)
+
+t0_proj=t0.proj()
+t1_proj=t1.proj()
+t_init=p00
+dataqubit=[]
+for i in range(4):
+    rr=np.random.randint(0,2)
+    print("random number:")
+    print(rr)
+    qtmp=(rr*p00+(1-rr)*p01).unit()
+    dataqubit.append(qtmp)
+t_init=tensor(p00,dataqubit[0],dataqubit[1],dataqubit[2],dataqubit[3])
+print(t_init)
+print(t_init.ptrace(0))
+print(t1.ptrace(0))
+#Measurement
+def measure_and_flip(psi):
+    prob_0=abs((psi.ptrace(0)*p00).overlap(p00))**2
+    prob_1=abs((psi.ptrace(0)*p01).overlap(p01))**2
+    print("measure qubit:p0="+str(prob_0)+", p1="+str(prob_1))
+    state=np.random.choice(2,p=[prob_0,prob_1])
+    
+    psitmp=psi
+    if(state==0):
+        print("measurement=0")
+        psitmp=(t0_proj*(psi+t0)).unit()
+        return psitmp
+    elif(state==1):
+        print("measurement=1")
+        psitmp=(t1_proj*(psi+t1)).unit()
+        return psitmp
+#operation for stablization
+def fourcnot(psi):
+    q=QubitCircuit(5,reverse_states=False)
+    q.add_gate("CNOT",controls=[1],targets=[0])
+    q.add_gate("CNOT",controls=[2],targets=[0])
+    q.add_gate("CNOT",controls=[3],targets=[0])
+    q.add_gate("CNOT",controls=[4],targets=[0])
+    qmat=gate_sequence_product(q.propagators())
+    return qmat*psi
+
+tstate=t_init
+print(t_init.overlap(t0))
+for count in range(10):
+    print(str(count)+"th run")
+    tstate=fourcnot(tstate)
+    tstate=measure_and_flip(tstate)

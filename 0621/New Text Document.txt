@@ -1,0 +1,10 @@
+re-run with all-different B values
+
+verify with qutip
+
+verify with 4-level QuaC
+
+optimize pulse length
+
+What caused the error(?)(try gamma=0,..)
+
