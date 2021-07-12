@@ -41,7 +41,7 @@ int main(int argc,char *args[]){
   /* Initialize QuaC */
   QuaC_initialize(argc,args);
   //rydberg coupling
-  b_term = 600;
+  b_term = 200;
   n_atoms = 4;
 
   //Get the bitstring we want to simulate
@@ -155,9 +155,9 @@ int main(int argc,char *args[]){
   b_dr = 7.0/8.0;
 
   //decay rate
-  gamma_r = 1.0/(540.0);//us
-  gamma_t1 = 1.0/(10000000);//T1 = 10s
-  gamma_t2s = 1.0/(1000000);//T2s = 1s
+  gamma_r = 0.0/(540.0);//us
+  gamma_t1 = 0.0/(10000000);//T1 = 10s
+  gamma_t2s = 0.0/(1000000);//T2s = 1s
 
 
   //Create the operators for the atoms
@@ -172,12 +172,12 @@ int main(int argc,char *args[]){
   for(i=0;i<n_atoms;i++){
     create_op_sys(qsysstd,2,&(atomsstd[i]));
   }
-  data_fp = fopen("neutral_atom_3atom_seq111.dat","w");
+  data_fp = fopen("na_4_par_3lvl2_0712.txt","w");
   PetscFPrintf(PETSC_COMM_WORLD,data_fp,"#Step_num time omega delta |10><10| |r0><r0| |d0><d0|\n");
   
   //Add hamiltonian terms
 
-//add_ham_term(qsys,tmp_scalar,2,atoms[seqgroup[i][j]][r],atoms[seqgroup[i][j]][one]);
+
   for(int i=0;i<n_seqgroups;i++){
   	for(int j=0;j<seqgroupsize[i];j++){
 
@@ -297,10 +297,10 @@ int main(int argc,char *args[]){
   assemble_qvec(dm);
   assemble_qvec(dmstd);
 
-  apply_1q_na_gate_to_qvec(dm,HADAMARD,atoms[0][zero]);
-  apply_1q_na_gate_to_qvec(dm,HADAMARD,atoms[1][zero]);
-  apply_1q_na_gate_to_qvec(dm,HADAMARD,atoms[2][zero]);
-  apply_1q_na_gate_to_qvec(dm,HADAMARD,atoms[3][zero]);
+//  apply_1q_na_gate_to_qvec(dm,HADAMARD,atoms[0][zero]);
+//  apply_1q_na_gate_to_qvec(dm,HADAMARD,atoms[1][zero]);
+//  apply_1q_na_gate_to_qvec(dm,HADAMARD,atoms[2][zero]);
+//  apply_1q_na_gate_to_qvec(dm,HADAMARD,atoms[3][zero]);
   //apply_1q_na_gate_to_qvec(dm,HADAMARD,atoms[4][zero]);
 
   //time_max  = 5;
@@ -309,7 +309,7 @@ int main(int argc,char *args[]){
   steps_max = 10000000;
 
   /* Set the ts_monitor to print results at each time step */
-  /* set_ts_monitor_sys(qsys,ts_monitor,&pulse_params); */
+  set_ts_monitor_sys(qsys,ts_monitor,&pulse_params); 
 
 
   //Do the timestepping
@@ -317,6 +317,7 @@ int main(int argc,char *args[]){
 
   time_step_sys(qsys,dm,0.0,time_max,dt,steps_max);
   PetscPrintf(PETSC_COMM_WORLD,"Timestep 1 done\n");
+  fclose(data_fp);
 
   op_list[0] = atoms[0][zero]->sig_z;
   op_list[1] = atoms[1][zero]->sig_z;
@@ -377,10 +378,6 @@ int main(int argc,char *args[]){
   assemble_qvec(dm32);
   PetscPrintf(PETSC_COMM_WORLD,"dm32 constructed\n");
   print_qvec_file(dm32,filename);
-  printf("test print_mat_sparse\n");
-  print_mat_sparse_to_file(qsys->mat_A,"quac_mat.dat"); 
-  print_mat_sparse(qsys->mat_A); 
-  
   /* print_qvec(dm32); */
 //----------------------------------------------------------------------------------------------
   create_circuit(&circ,25);
@@ -467,17 +464,14 @@ PetscErrorCode ts_monitor(TS ts,PetscInt step,PetscReal time,Vec rho_data,void *
 
   //ev( (|1><1|)(|0><0|) )= ev(|10><10|)
   //get_expectation_value_qvec_list
-  get_expectation_value_qvec(dm_dummy,&trace_val,6,atoms[2][one],atoms[2][one],atoms[3][one],atoms[3][one],atoms[4][one],atoms[4][one]);
-  get_expectation_value_qvec(dm_dummy,&trace_val2,6,atoms[0][one],atoms[0][one],atoms[1][one],atoms[1][one],atoms[2][r],atoms[2][r]);
-  get_expectation_value_qvec(dm_dummy,&trace_val3,6,atoms[0][one],atoms[0][one],atoms[1][r],atoms[1][r],atoms[2][one],atoms[2][one]);
-  get_expectation_value_qvec(dm_dummy,&trace_val4,6,atoms[0][r],atoms[0][r],atoms[1][one],atoms[1][one],atoms[2][one],atoms[2][one]);
-  get_expectation_value_qvec(dm_dummy,&trace_val5,6,atoms[0][one],atoms[0][one],atoms[1][r],atoms[1][r],atoms[2][r],atoms[2][r]);
-  get_expectation_value_qvec(dm_dummy,&trace_val6,6,atoms[0][r],atoms[0][r],atoms[1][one],atoms[1][one],atoms[2][r],atoms[2][r]);
-  get_expectation_value_qvec(dm_dummy,&trace_val7,6,atoms[0][r],atoms[0][r],atoms[1][r],atoms[1][r],atoms[2][one],atoms[2][one]);
-  get_expectation_value_qvec(dm_dummy,&trace_val8,6,atoms[0][r],atoms[0][r],atoms[1][r],atoms[1][r],atoms[2][r],atoms[2][r]);
+  get_expectation_value_qvec(dm_dummy,&trace_val,8,atoms[0][one],atoms[0][one],atoms[1][one],atoms[1][one],atoms[2][one],atoms[2][one],atoms[3][one],atoms[3][one]);
+  get_expectation_value_qvec(dm_dummy,&trace_val2,8,atoms[0][one],atoms[0][one],atoms[1][one],atoms[1][one],atoms[2][one],atoms[2][one],atoms[3][r],atoms[3][r]);
+  get_expectation_value_qvec(dm_dummy,&trace_val3,8,atoms[0][one],atoms[0][one],atoms[1][one],atoms[1][one],atoms[2][r],atoms[2][r],atoms[3][one],atoms[3][one]);
+  get_expectation_value_qvec(dm_dummy,&trace_val4,8,atoms[0][one],atoms[0][one],atoms[1][r],atoms[1][r],atoms[2][one],atoms[2][one],atoms[3][one],atoms[3][one]);
+  get_expectation_value_qvec(dm_dummy,&trace_val5,8,atoms[0][r],atoms[0][r],atoms[1][one],atoms[1][one],atoms[2][one],atoms[2][one],atoms[3][one],atoms[3][one]);
 
 
-  PetscFPrintf(PETSC_COMM_WORLD,data_fp,"%d %f %f %f %f %f %f %f %f %f\n",step,time,PetscRealPart(trace_val),PetscRealPart(trace_val2),PetscRealPart(trace_val3),PetscRealPart(trace_val4),PetscRealPart(trace_val5),PetscRealPart(trace_val6),PetscRealPart(trace_val7),PetscRealPart(trace_val8));
+  PetscFPrintf(PETSC_COMM_WORLD,data_fp,"%d %f %f %f %f %f %f\n",step,time,PetscRealPart(trace_val),PetscRealPart(trace_val2),PetscRealPart(trace_val3),PetscRealPart(trace_val4),PetscRealPart(trace_val5));
 
   /* print_qvec(rho); */
 
