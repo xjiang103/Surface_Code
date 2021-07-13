@@ -33,7 +33,7 @@ b_field = 200*(2*np.pi)
 
 omega_amp=17.0*(2*np.pi)
 
-delta_200=23.85969*(2*np.pi)
+delta_200=23*(2*np.pi)
 delta_300=23.94195557*(2*np.pi)
 delta_400=24.01839294*(2*np.pi)
 delta_500=23.86193848*(2*np.pi)
@@ -160,8 +160,9 @@ hada_1=tensor(hada3(),hada3(),hada3(),hada3())
 
 ####
 #apply C_3 Z gate
+
 times=np.linspace(0.0,0.54,10000)
-options = Options(normalize_output=False)
+options = Options(normalize_output=False,atol=1e-15,rtol=1e-15,nsteps=100000,tidy=False)
 result = sesolve(H,data,times,options=options)
 ##result=sesolve(H,data,times)
 
@@ -193,7 +194,7 @@ plt.plot(times+0.00,state111r,label=r"qutip $|111r\rangle\langle 111r|$")
 #plt.plot(times+0.00,stater111,label=r"$qutip |r111\rangle\langle r111|$")
 plt.plot(times,residual,label="qutip other states")
 
-quacdata = np.loadtxt("na_4_par_3lvl2_0712.txt")
+quacdata = np.loadtxt("na_4_par_3lvl2_0712_2.txt")
 
 plt.plot(quacdata[:,1],quacdata[:,2],lw=2,label=r"quac $|1111\rangle\langle 1111|$")
 plt.plot(quacdata[:,1],quacdata[:,3],lw=2,label=r"quac $|111r\rangle\langle 111r|$")
@@ -201,6 +202,8 @@ plt.plot(quacdata[:,1],quacdata[:,3],lw=2,label=r"quac $|111r\rangle\langle 111r
 #plt.plot(quacdata[:,1],quacdata[:,5],lw=2,label=r"quac $|1r11\rangle\langle 1r11|$")
 #plt.plot(quacdata[:,1],quacdata[:,6],lw=2,label=r"quac $|r111\rangle\langle r111|$")
 plt.plot(quacdata[:,1],1-quacdata[:,6]-quacdata[:,5]-quacdata[:,4]-quacdata[:,3]-quacdata[:,2],lw=2,label=r"quac other states")
+
+
 ##residual=[]
 ##enum2=[0,1,3,4,9,10,12,13,27,28,30,31,36,37,39,40]
 ##
