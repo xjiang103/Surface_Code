@@ -146,10 +146,9 @@ H2=(tensor(r_r,qeye(3),qeye(3),qeye(3))+
     tensor(qeye(3),qeye(3),r_r,qeye(3))+
     tensor(qeye(3),qeye(3),qeye(3),r_r))
 
-H=[H0+H_leak,[H1,Omega_coeff],[H2,Delta_coeff]]
+#H=[H0+H_leak,[H1,Omega_coeff],[H2,Delta_coeff]]
+H=[H0,[H1,Omega_coeff],[H2,Delta_coeff]]
 
-print("H=:\n")
-print(H0.data)
 
 #---------------------------------------------------------------------
 
@@ -163,7 +162,7 @@ hada_1=tensor(hada3(),hada3(),hada3(),hada3())
 
 times=np.linspace(0.0,0.54,10000)
 options = Options(normalize_output=False,atol=1e-15,rtol=1e-15,nsteps=100000,tidy=False)
-result = sesolve(H,data,times,options=options)
+result = mesolve(H,data,times,options=options)
 ##result=sesolve(H,data,times)
 
 #res_mat=result.states
@@ -194,7 +193,7 @@ plt.plot(times+0.00,state111r,label=r"qutip $|111r\rangle\langle 111r|$")
 #plt.plot(times+0.00,stater111,label=r"$qutip |r111\rangle\langle r111|$")
 plt.plot(times,residual,label="qutip other states")
 
-quacdata = np.loadtxt("na_4_par_3lvl2_0712_2.txt")
+quacdata = np.loadtxt("na_4_par_3lvl2_0714.txt")
 
 plt.plot(quacdata[:,1],quacdata[:,2],lw=2,label=r"quac $|1111\rangle\langle 1111|$")
 plt.plot(quacdata[:,1],quacdata[:,3],lw=2,label=r"quac $|111r\rangle\langle 111r|$")
@@ -219,6 +218,7 @@ plt.title("B= 200MHz")
 plt.xlabel("Time")
 plt.xlim(0,0.6)
 plt.yscale("log")
+plt.ylim(1e-7,1)
 plt.legend(bbox_to_anchor=(0.54, 0.4), loc='center left', ncol=1)
 
 plt.show()
