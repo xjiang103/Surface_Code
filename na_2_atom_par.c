@@ -151,7 +151,7 @@ int main(int argc,char *args[]){
   b_dr = 7.0/8.0;
 
   //decay rate
-  gamma_r = 0.0/(540.0);//us
+  gamma_r = 1.0/(540.0);//us
   gamma_t1 = 1.0/(10000000);//T1 = 10s
   gamma_t2s = 1.0/(1000000);//T2s = 1s
 

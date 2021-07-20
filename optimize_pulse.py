@@ -23,7 +23,7 @@ def fun_sp(params,final_run=None):
 
     #Run QuaC
     try:
-        output = subprocess.check_output(["./na_2_atom_par","-ts_rk_type","5bs","-ts_rtol","1e-8","-ts_atol","1e-8","-n_ens","-1",
+        output = subprocess.check_output(["./na_2_atom","-ts_rk_type","5bs","-ts_rtol","1e-8","-ts_atol","1e-8","-n_ens","-1",
                                           "-pulse_type","ARP","-file",file_name,
                                           "-b_term",str(b),
                                           "-delta",str(params[0]),
