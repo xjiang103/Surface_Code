@@ -15,7 +15,7 @@ b_dr = 7.0/8.0
 
 gamma_r = 1.0/(540.0)
 
-b_field = 100000*(2*np.pi)
+b_field = 200*(2*np.pi)
 
 omega_amp=17.0*(2*np.pi)
 delta_amp=23.0*(2*np.pi)
