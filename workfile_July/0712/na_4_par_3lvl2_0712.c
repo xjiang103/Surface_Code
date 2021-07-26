@@ -297,10 +297,10 @@ int main(int argc,char *args[]){
   assemble_qvec(dm);
   assemble_qvec(dmstd);
 
-//  apply_1q_na_gate_to_qvec(dm,HADAMARD,atoms[0][zero]);
-//  apply_1q_na_gate_to_qvec(dm,HADAMARD,atoms[1][zero]);
-//  apply_1q_na_gate_to_qvec(dm,HADAMARD,atoms[2][zero]);
-//  apply_1q_na_gate_to_qvec(dm,HADAMARD,atoms[3][zero]);
+  apply_1q_na_gate_to_qvec(dm,HADAMARD,atoms[0][zero]);
+  apply_1q_na_gate_to_qvec(dm,HADAMARD,atoms[1][zero]);
+  apply_1q_na_gate_to_qvec(dm,HADAMARD,atoms[2][zero]);
+  apply_1q_na_gate_to_qvec(dm,HADAMARD,atoms[3][zero]);
   //apply_1q_na_gate_to_qvec(dm,HADAMARD,atoms[4][zero]);
 
   //time_max  = 5;

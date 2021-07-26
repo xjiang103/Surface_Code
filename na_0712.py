@@ -33,7 +33,7 @@ b_field = 200*(2*np.pi)
 
 omega_amp=17.0*(2*np.pi)
 
-delta_200=23*(2*np.pi)
+delta_200=23.85969238*(2*np.pi)
 delta_300=23.94195557*(2*np.pi)
 delta_400=24.01839294*(2*np.pi)
 delta_500=23.86193848*(2*np.pi)
@@ -62,9 +62,9 @@ def Omega_coeff(t,args):
     a=np.exp(-1*np.power(t1,4)/np.power(tau,4))
     p=0.0
     if ((t>0)&(t<lpulse/2)):
-        p=np.exp(-1*np.power(t-t1,4)/np.power(tau,4))/(1-a)
+        p=(np.exp(-1*np.power(t-t1,4)/np.power(tau,4))-a)/(1-a)
     elif ((t>lpulse/2)&(t<lpulse)):
-        p=np.exp(-1*np.power(t-t2,4)/np.power(tau,4))/(1-a)
+        p=(np.exp(-1*np.power(t-t2,4)/np.power(tau,4))-a)/(1-a)
     else:
         p=0.0
     return omega_amp*p
@@ -155,13 +155,13 @@ H=[H0,[H1,Omega_coeff],[H2,Delta_coeff]]
 data=tensor(one,one,one,one)
 
 hada_1=tensor(hada3(),hada3(),hada3(),hada3())
-#data=hada_1*data
+data=hada_1*data
 
 ####
 #apply C_3 Z gate
 
 times=np.linspace(0.0,0.54,10000)
-options = Options(normalize_output=False,atol=1e-15,rtol=1e-15,nsteps=100000,tidy=False)
+options = Options(normalize_output=False,atol=1e-15,rtol=1e-15,nsteps=10000,tidy=False)
 result = mesolve(H,data,times,options=options)
 ##result=sesolve(H,data,times)
 
@@ -186,12 +186,12 @@ for i in range(10000):
     residual.append(1-state1111[i]-state111r[i]-state11r1[i]-state1r11[i]-stater111[i])
 
 
-plt.plot(times,state1111,label=r"qutip $|1111\rangle\langle 1111|$")
+plt.plot(times+0.00,state1111,label=r"qutip $|1111\rangle\langle 1111|$")
 plt.plot(times+0.00,state111r,label=r"qutip $|111r\rangle\langle 111r|$")
 #plt.plot(times+0.00,state11r1,label=r"$qutip |11r1\rangle\langle 11r1|$")
 #plt.plot(times+0.00,state1r11,label=r"$qutip |1r11\rangle\langle 1r11|$")
 #plt.plot(times+0.00,stater111,label=r"$qutip |r111\rangle\langle r111|$")
-plt.plot(times,residual,label="qutip other states")
+plt.plot(times+0.00,residual,label="qutip other states")
 
 quacdata = np.loadtxt("na_4_par_3lvl2_0714.txt")
 

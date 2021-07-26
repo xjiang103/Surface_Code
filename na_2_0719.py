@@ -58,9 +58,9 @@ def Omega_coeff(t,args):
     a=np.exp(-1*np.power(t1,4)/np.power(tau,4))
     p=0.0
     if ((t>0)&(t<lpulse/2)):
-        p=np.exp(-1*np.power(t-t1,4)/np.power(tau,4))/(1-a)
+        p=(np.exp(-1*np.power(t-t1,4)/np.power(tau,4))-a)/(1-a)
     elif ((t>lpulse/2)&(t<lpulse)):
-        p=np.exp(-1*np.power(t-t2,4)/np.power(tau,4))/(1-a)
+        p=(np.exp(-1*np.power(t-t2,4)/np.power(tau,4))-a)/(1-a)
     else:
         p=0.0
     return omega_amp*p
@@ -151,7 +151,7 @@ result = mesolve(H,data,times,options=options)
 
 #----------------------------------------------------------------------
 #Make relevant plots
-
+##
 ##state1111=[]
 ##state111r=[]
 ##state11r1=[]
@@ -161,7 +161,7 @@ result = mesolve(H,data,times,options=options)
 ##enum2=[0,1,3,4,9,10,12,13,27,28,30,31,36,37,39,40]
 ##
 ##
-##print(result.states[0][13][0][0])
+###print(result.states[0][13][0][0])
 ##for i in range(10000):
 ##    state1111.append(np.abs(result.states[i][40][0][0])**2)
 ##    state111r.append(np.abs(result.states[i][41][0][0])**2)
