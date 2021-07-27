@@ -70,7 +70,6 @@ int main(int argc,char *args[]){
   PetscOptionsGetReal(NULL,NULL,"-delta",&delta,NULL);
   PetscOptionsGetReal(NULL,NULL,"-deltat",&deltat,NULL);
   PetscOptionsGetReal(NULL,NULL,"-length",&length,NULL);
-  PetscOptionsGetReal(NULL,NULL,"-pulse_length",&pulse_length,NULL);
   PetscOptionsGetReal(NULL,NULL,"-phase_qb0",&phase_qb0,NULL);
   PetscOptionsGetReal(NULL,NULL,"-phase_qb1",&phase_qb1,NULL);
 
@@ -294,7 +293,10 @@ int main(int argc,char *args[]){
 
   //  apply_projective_measurement_tensor_list(dm,&meas_val,5,op_list);
   //I don't think we need to split it up anymore
-
+	printf("test print_mat_sparse\n");
+  print_mat_sparse_to_file(qsys->mat_A,"quac_mat_0719.txt"); 
+  print_mat_sparse(qsys->mat_A); 
+  
   PetscPrintf(PETSC_COMM_WORLD,"Full quantum state: \n");
   print_qvec(dm);
 
