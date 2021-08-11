@@ -1,0 +1,28 @@
+Simulating bitstr 111 with dmpos=13 and dmstdpos=7
+b= 2513.274123
+deltab= 1256.637061
+Creating density matrix vector for Liouvillian solver.
+Creating density matrix vector for Liouvillian solver.
+Creating density matrix vector for Liouvillian solver.
+Creating density matrix vector for Liouvillian solver.
+---------------------
+Timestep 1 done
+Full quantum state: 
+logical state populations: 
+0 0 0.125012
+1 1 0.124930
+2 2 0.124930
+3 3 0.124939
+4 4 0.124930
+5 5 0.124939
+6 6 0.124939
+7 7 0.124716
+dm32 constructed
+fidelity between seq(32*32) and std is 1.24716438364082193857e-01
+sum of the diag is 0.999335
+1.24716438364082193857e-01
+trace= (0.9993353994629326+5.965209337145053e-18j)
+trace= (0.9993353994629326+5.965209337145053e-18j)
+Optimizing ARP for b =  400.0
+Optimizing Delta, T, and phases
+Final Fidelity:  0.9872163198664876

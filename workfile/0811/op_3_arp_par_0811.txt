@@ -1,0 +1,24 @@
+
+ccz 
+ccz 
+ccz 1 Delta_T_phases for b=200.0 
+ccz 1 Delta_T_phases for b=200.0 
+ccz 1 Delta_T_phases for b=200.0 0.9865324255072255 
+ccz 1 Delta_T_phases for b=200.0 0.9865456455284516 
+ccz 1 Delta_T_phases for b=200.0 0.9865324255072255 
+ccz 1 Delta_T_phases for b=200.0 0.9864989979384244 
+ccz 1 Delta_T_phases for b=200.0 0.9863538445600315 
+ccz 1 Delta_T_phases for b=200.0 0.9857969377077396 
+ccz 1 Delta_T_phases for b=200.0 0.9848063316118107 
+ccz 1 Delta_T_phases for b=200.0 0.9811539307437631 
+ccz 1 Delta_T_phases for b=200.0 0.9713811479924692 
+ccz 1 Delta_T_phases for b=200.0 0.9487652183511825 
+ccz 1 Delta_T_phases for b=400.0 0.9964659570275111 
+ccz 1 Delta_T_phases for b=400.0 0.9964638239340309 
+ccz 1 Delta_T_phases for b=400.0 0.9964546211923646 
+ccz 1 Delta_T_phases for b=400.0 0.9964206528026043 
+ccz 1 Delta_T_phases for b=400.0 0.9962817463377237 
+ccz 1 Delta_T_phases for b=400.0 0.996038162383062 
+ccz 1 Delta_T_phases for b=400.0 0.9951421540997705 
+ccz 1 Delta_T_phases for b=400.0 0.9927455065612943 
+ccz 1 Delta_T_phases for b=400.0 0.9872163198664876 
