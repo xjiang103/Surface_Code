@@ -8,18 +8,18 @@ from qutip.qip.operations import snot,phasegate
 import argparse
 
 
-parser = argparse.ArgumentParser(description='Optimize Pulses')
-parser.add_argument('-b','--b_couple', help='Rydberg Coupling Strength', required=True, type=float)
-args = vars(parser.parse_args())
-b = args["b_couple"]
+##parser = argparse.ArgumentParser(description='Optimize Pulses')
+##parser.add_argument('-b','--b_couple', help='Rydberg Coupling Strength', required=True, type=float)
+##args = vars(parser.parse_args())
+##b = args["b_couple"]
 ddfac=1
 typestr="ccz"
 
 
 unique_file = str(uuid.uuid4())[0:8]
 file_name = "dm_"+unique_file+".dat" #Allow us to run in parallel
-params = [23]
-#b=100
+params = [-0.5,0.2]
+
 f=open("op_3_arp_par.txt","a")
 f.write('\n')
 f.write(typestr+' ')
@@ -30,9 +30,8 @@ def fun_sp(params,final_run=None):
     try:
         output = subprocess.check_output(["./na_3_par_3lvl2","-ts_rk_type","5bs","-ts_rtol","1e-8","-ts_atol","1e-8","-n_ens","-1",
                                           "-pulse_type","ARP","-file",file_name,
-                                          "-b_term",str(b),
+                                          "-b_term",str(params[1]),
                                           "-delta",str(params[0]),
-                                          "-pulse_length",str(params[1]),
                                           "-dd_fac",str(ddfac)])
     except:
         pass
@@ -81,18 +80,20 @@ def fun_arp(delta):
     return 1-fid
 
 
-print("Optimizing ARP for b = ",str(b))
-print("Optimizing Delta, T, and phases")
+#print("Optimizing SP for b = ",str(b))
 f.write(str(ddfac)+' ')
 #f.write(str(b)+' ')
-f.write("Delta_T_phases for b="+str(b)+' ')
-default_sp_params = [-0.5,0.2]
-default_sp_params = [23,0.54]
-res = minimize(fun_sp,default_sp_params,method="nelder-mead",callback=print_callback)
+#default_sp_params = [-0.5,0.2]
+default_sp_params = [23,60]
+
+
+#res = minimize(fun_sp,default_sp_params,method="nelder-mead",callback=print_callback)
+bnds=((0,None),(0,400))
+res = minimize(fun_sp,default_sp_params,method="Powell",bounds=bnds,callback=print_callback)
+
 
 #get the optimal phases
 fun_sp(res.x,True)
-
 print("Final Fidelity: ",str(1-res.fun))
 f.write(str(1-res.fun)+' ')
 print("Final Params: ",str(res.x))
@@ -101,4 +102,3 @@ f.write(str(res.x[1])+' ')
 f.write('\n')
 #Final Fidelity:  0.9997463238664505
 f.close()
-

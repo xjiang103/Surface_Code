@@ -13,14 +13,15 @@ parser.add_argument('-b','--b_couple', help='Rydberg Coupling Strength', require
 args = vars(parser.parse_args())
 b = args["b_couple"]
 ddfac=1
-typestr="ccz"
+typestr="c4z"
 
 
 unique_file = str(uuid.uuid4())[0:8]
 file_name = "dm_"+unique_file+".dat" #Allow us to run in parallel
-params = [23]
-#b=100
-f=open("op_3_arp_par.txt","a")
+params = [-0.5,0.2,10]
+
+
+f=open("op_5_arp_par.txt","a")
 f.write('\n')
 f.write(typestr+' ')
 def fun_sp(params,final_run=None):
@@ -28,7 +29,7 @@ def fun_sp(params,final_run=None):
 
     #Run QuaC
     try:
-        output = subprocess.check_output(["./na_3_par_3lvl2","-ts_rk_type","5bs","-ts_rtol","1e-8","-ts_atol","1e-8","-n_ens","-1",
+        output = subprocess.check_output(["./na_5_par_3lvl3","-ts_rk_type","5bs","-ts_rtol","1e-8","-ts_atol","1e-8","-n_ens","-1",
                                           "-pulse_type","ARP","-file",file_name,
                                           "-b_term",str(b),
                                           "-delta",str(params[0]),
@@ -38,12 +39,12 @@ def fun_sp(params,final_run=None):
         pass
 
     #Read in the QuaC DM
-    dm = Qobj(np.loadtxt(file_name).view(complex),dims=[[2,2,2],[2,2,2]])
+    dm = Qobj(np.loadtxt(file_name).view(complex),dims=[[2,2,2,2,2],[2,2,2,2,2]])
     #Remove file
     os.remove(file_name)
 
     #QUTIP to get perfect circuit
-    res = minimize(qutip_phase,[0,0,0],method="COBYLA",args=(dm))
+    res = minimize(qutip_phase,[0,0,0,0,0],method="COBYLA",args=(dm))
 
     fid = 1-res.fun
     print(fid)
@@ -52,25 +53,31 @@ def fun_sp(params,final_run=None):
         f.write(str(res.x[0])+' ')
         f.write(str(res.x[1])+' ')
         f.write(str(res.x[2])+' ')
+        f.write(str(res.x[3])+' ')
+        f.write(str(res.x[4])+' ')
     return 1-fid
 def print_callback(xs):
     print(xs)
 def qutip_phase(params,dm):
     #define cz_arp and czz arp
-    ccz_arp = Qobj([[1,0,0,0,0,0,0,0],[0,-1,0,0,0,0,0,0],[0,0,-1,0,0,0,0,0],[0,0,0,-1,0,0,0,0],[0,0,0,0,-1,0,0,0],[0,0,0,0,0,-1,0,0],[0,0,0,0,0,0,-1,0],[0,0,0,0,0,0,0,-1]],dims=[[2,2,2],[2,2,2]])
-    czz_arp = Qobj([[1,0,0,0,0,0,0,0],[0,-1,0,0,0,0,0,0],[0,0,-1,0,0,0,0,0],[0,0,0,1,0,0,0,0],[0,0,0,0,1,0,0,0],[0,0,0,0,0,1,0,0],[0,0,0,0,0,0,1,0],[0,0,0,0,0,0,0,1]],dims=[[2,2,2],[2,2,2]])
+    c4z_arp = Qobj(np.diag([1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1])
+                   ,dims=[[2,2,2,2,2],[2,2,2,2,2]])
+    cz4_arp = Qobj(np.diag([1,-1,-1,1,-1,1,1,-1,-1,1,1,-1,1,-1,-1,1,-1,-1,-1,1,-1,1,1,-1,-1,1,1,-1,1,-1,-1,1])
+                   ,dims=[[2,2,2,2,2],[2,2,2,2,2]])
     
     #Get two hadamard state
-    state = tensor(snot(),snot(),snot())*tensor(basis(2,1),basis(2,1),basis(2,1))
+    state = tensor(snot(),snot(),snot(),snot(),snot())*tensor(basis(2,1),basis(2,1),basis(2,1),basis(2,1),basis(2,1))
 
     #Apply phase gates with parameters that we are optimizing
-    state = tensor(phasegate(params[0]),qeye(2),qeye(2))*state
-    state = tensor(qeye(2),phasegate(params[1]),qeye(2))*state
-    state = tensor(qeye(2),qeye(2),phasegate(params[2]))*state
+    state = tensor(phasegate(params[0]),qeye(2),qeye(2),qeye(2),qeye(2))*state
+    state = tensor(qeye(2),phasegate(params[1]),qeye(2),qeye(2),qeye(2))*state
+    state = tensor(qeye(2),qeye(2),phasegate(params[2]),qeye(2),qeye(2))*state
+    state = tensor(qeye(2),qeye(2),qeye(2),phasegate(params[3]),qeye(2))*state
+    state = tensor(qeye(2),qeye(2),qeye(2),qeye(2),phasegate(params[4]))*state
 
     #Now apply cz_arp
-    state = ccz_arp*state
-
+    state = c4z_arp*state
+    print("trace=",str(np.trace(dm)))
     #Get fidelity wrt quac dm
     fid = fidelity(dm,state)
 
@@ -101,4 +108,3 @@ f.write(str(res.x[1])+' ')
 f.write('\n')
 #Final Fidelity:  0.9997463238664505
 f.close()
-

@@ -18,11 +18,13 @@ typestr="ccz"
 
 unique_file = str(uuid.uuid4())[0:8]
 file_name = "dm_"+unique_file+".dat" #Allow us to run in parallel
-params = [23]
-#b=100
+params = [-0.5,0.2]
+
+
 f=open("op_3_arp_par.txt","a")
 f.write('\n')
 f.write(typestr+' ')
+
 def fun_sp(params,final_run=None):
 
 
@@ -41,7 +43,6 @@ def fun_sp(params,final_run=None):
     dm = Qobj(np.loadtxt(file_name).view(complex),dims=[[2,2,2],[2,2,2]])
     #Remove file
     os.remove(file_name)
-
     #QUTIP to get perfect circuit
     res = minimize(qutip_phase,[0,0,0],method="COBYLA",args=(dm))
 
@@ -70,7 +71,7 @@ def qutip_phase(params,dm):
 
     #Now apply cz_arp
     state = ccz_arp*state
-
+    print("trace=",str(np.trace(dm)))
     #Get fidelity wrt quac dm
     fid = fidelity(dm,state)
 
@@ -101,4 +102,3 @@ f.write(str(res.x[1])+' ')
 f.write('\n')
 #Final Fidelity:  0.9997463238664505
 f.close()
-
