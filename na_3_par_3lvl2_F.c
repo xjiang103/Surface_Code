@@ -22,13 +22,13 @@ FILE *data_fp = NULL;
 
 int main(int argc,char *args[]){
   PetscInt n_atoms,i,j,n_levels,n_seqgroups,max_seqgroupsize,val_init,pos1,pos2,dmpos,dmstdpos;
-  PetscScalar tmp_scalar = 1.0,b_term=600,deltab=0,b_dr,b_0r,b_1r,gamma_r,valpar,diagsum,meas_val,gamma_t1,gamma_t2s;
+  PetscScalar tmp_scalar = 1.0,b_term=600,b_dr,b_0r,b_1r,gamma_r,valpar,diagsum,meas_val,gamma_t1,gamma_t2s;
   PetscInt steps_max,n_ens=0,seed=12;
   qvec dm,dmstd;
   qsystem qsys,qsysstd;
-  PetscReal dt,time_max,measurement_time,phase_qb0=0,phase_qb1=0,phase_qb2=0,phase_qb3=0,phase_qb4=0,dd_fac=1;
+  PetscReal dt,time_max,measurement_time,phase_qb0=0,phase_qb1=0,phase_qb2=0,phase_qb3=0,phase_qb4=0,dd_fac=0;
   PetscReal single_qubit_gate_time=0.1,two_qubit_gate_time=0.1,var,fidelity;
-  char bitstr[PETSC_MAX_PATH_LEN] = "1111"; //Default bitstr to start with
+  char bitstr[PETSC_MAX_PATH_LEN] = "111"; //Default bitstr to start with
   char pulse_type[PETSC_MAX_PATH_LEN] = "ARP",filename[PETSC_MAX_PATH_LEN]="dm.dat";
   circuit circ;
   int length;
@@ -42,14 +42,13 @@ int main(int argc,char *args[]){
   QuaC_initialize(argc,args);
   //rydberg coupling
   b_term = 600;
-  n_atoms = 4;
+  n_atoms = 3;
 
   //Get the bitstring we want to simulate
   PetscOptionsGetString(NULL,NULL,"-bitstr",bitstr,PETSC_MAX_PATH_LEN,NULL);
   PetscOptionsGetInt(NULL,NULL,"-n_ens",&n_ens,NULL);
   PetscOptionsGetInt(NULL,NULL,"-seed",&seed,NULL);
   PetscOptionsGetReal(NULL,NULL,"-b_term",&b_term,NULL);
-  PetscOptionsGetReal(NULL,NULL,"-delta_b_term",&deltab,NULL);
   PetscOptionsGetString(NULL,NULL,"-pulse_type",pulse_type,PETSC_MAX_PATH_LEN,NULL);
   PetscOptionsGetString(NULL,NULL,"-file",filename,PETSC_MAX_PATH_LEN,NULL);
 
@@ -70,7 +69,6 @@ int main(int argc,char *args[]){
   PetscOptionsGetReal(NULL,NULL,"-omega",&omega,NULL);
   PetscOptionsGetReal(NULL,NULL,"-delta",&delta,NULL);
   PetscOptionsGetReal(NULL,NULL,"-deltat",&deltat,NULL);
-  PetscOptionsGetReal(NULL,NULL,"-pulse_length",&pulse_length,NULL);
   PetscOptionsGetReal(NULL,NULL,"-length",&length,NULL);
   PetscOptionsGetReal(NULL,NULL,"-phase_qb0",&phase_qb0,NULL);
   PetscOptionsGetReal(NULL,NULL,"-phase_qb1",&phase_qb1,NULL);
@@ -83,11 +81,10 @@ int main(int argc,char *args[]){
 
 
   b_term = b_term*2*PETSC_PI;
-  deltab = deltab*2*PETSC_PI;
   dmpos = 0;
   dmstdpos = 0;
   length = strlen(bitstr);
-  if(length!=4){
+  if(length!=3){
     PetscPrintf(PETSC_COMM_WORLD,"ERROR: bitstr must be of length 5!\n");
     exit(8);
   }
@@ -119,12 +116,12 @@ int main(int argc,char *args[]){
   //number of sequential operations in time domain
   n_seqgroups = 1;
   //number of qubits in each sequential operation
-  PetscInt seqgroupsize[1] = {4};
+  PetscInt seqgroupsize[1] = {3};
   //maximum element in n_seqgroupsize
-  max_seqgroupsize=4;
+  max_seqgroupsize=3;
   //indices of atoms in each sequential operation
   PetscInt seqgroup[n_seqgroups][max_seqgroupsize];
-  seqgroup[0][0]=0, seqgroup[0][1]=1, seqgroup[0][2]=2, seqgroup[0][3]=3;
+  seqgroup[0][0]=0, seqgroup[0][1]=1, seqgroup[0][2]=2;
   //parameters for each pulse in the sequence
   PulseParams pulse_params[n_seqgroups];
 
@@ -176,10 +173,10 @@ int main(int argc,char *args[]){
   }
   data_fp = fopen("neutral_atom_3atom_seq111.dat","w");
   PetscFPrintf(PETSC_COMM_WORLD,data_fp,"#Step_num time omega delta |10><10| |r0><r0| |d0><d0|\n");
-  
+
   //Add hamiltonian terms
 
-//add_ham_term(qsys,tmp_scalar,2,atoms[seqgroup[i][j]][r],atoms[seqgroup[i][j]][one]);
+
   for(int i=0;i<n_seqgroups;i++){
   	for(int j=0;j<seqgroupsize[i];j++){
 
@@ -217,12 +214,9 @@ int main(int argc,char *args[]){
   /* } */
   //Coupling term
   //b * (|r_0> <r_0|) (|r_1><r_1|) = (|r_0 r_1><r_0 r_1|)
-  add_ham_term(qsys,b_term+3*deltab,4,atoms[0][r],atoms[0][r],atoms[1][r],atoms[1][r]);
-  add_ham_term(qsys,b_term+2*deltab,4,atoms[0][r],atoms[0][r],atoms[2][r],atoms[2][r]);
-  add_ham_term(qsys,b_term+1*deltab,4,atoms[0][r],atoms[0][r],atoms[3][r],atoms[3][r]);
-  add_ham_term(qsys,b_term+0*deltab,4,atoms[1][r],atoms[1][r],atoms[2][r],atoms[2][r]);
-  add_ham_term(qsys,b_term-1*deltab,4,atoms[1][r],atoms[1][r],atoms[3][r],atoms[3][r]);
-  add_ham_term(qsys,b_term-2*deltab,4,atoms[2][r],atoms[2][r],atoms[3][r],atoms[3][r]);
+  add_ham_term(qsys,b_term,4,atoms[0][r],atoms[0][r],atoms[1][r],atoms[1][r]);
+  add_ham_term(qsys,b_term,4,atoms[0][r],atoms[0][r],atoms[2][r],atoms[2][r]);
+  add_ham_term(qsys,dd_fac*b_term,4,atoms[1][r],atoms[1][r],atoms[2][r],atoms[2][r]);
  
 
   //Add lindblad terms
@@ -262,13 +256,14 @@ int main(int argc,char *args[]){
 
     }
   }
+
   //Now that we've added all the terms, we construct the matrix
   if(n_ens>0){
     use_mcwf_solver(qsys,n_ens,seed);
   }
-  printf("test1\n");
+
   construct_matrix(qsys);
-  printf("test2\n");
+
   add_ham_term(qsysstd,1.0,1,atomsstd[0]->n);
   add_lin_term(qsysstd,1.0,1,atomsstd[0]->n);
   //
@@ -298,11 +293,10 @@ int main(int argc,char *args[]){
 
   assemble_qvec(dm);
   assemble_qvec(dmstd);
-
-  apply_1q_na_gate_to_qvec(dm,HADAMARD,atoms[0][zero]);
-  apply_1q_na_gate_to_qvec(dm,HADAMARD,atoms[1][zero]);
-  apply_1q_na_gate_to_qvec(dm,HADAMARD,atoms[2][zero]);
-  apply_1q_na_gate_to_qvec(dm,HADAMARD,atoms[3][zero]);
+  //apply_1q_na_gate_to_qvec(dm,HADAMARD,atoms[0][zero]);
+  //apply_1q_na_gate_to_qvec(dm,HADAMARD,atoms[1][zero]);
+  //apply_1q_na_gate_to_qvec(dm,HADAMARD,atoms[2][zero]);
+  //apply_1q_na_gate_to_qvec(dm,HADAMARD,atoms[3][zero]);
   //apply_1q_na_gate_to_qvec(dm,HADAMARD,atoms[4][zero]);
 
   //time_max  = 5;
@@ -323,7 +317,7 @@ int main(int argc,char *args[]){
   op_list[0] = atoms[0][zero]->sig_z;
   op_list[1] = atoms[1][zero]->sig_z;
   op_list[2] = atoms[2][zero]->sig_z;
-  op_list[3] = atoms[3][zero]->sig_z;
+  //op_list[3] = atoms[3][zero]->sig_z;
   //op_list[4] = atoms[4][zero]->sig_z;
 
   //  apply_projective_measurement_tensor_list(dm,&meas_val,5,op_list);
@@ -344,8 +338,8 @@ int main(int argc,char *args[]){
         for(int l_11=0;l_11<2;l_11++){ //atom 1, 1st element
           for(int l_20=0;l_20<2;l_20++){ //atom 2, 0th element
             for(int l_21=0;l_21<2;l_21++){ //atom 2, 1st element
-                for(int l_30=0;l_30<2;l_30++){ //atom 3, 0th element
-            			for(int l_31=0;l_31<2;l_31++){ //atom 3, 1st element
+//                for(int l_30=0;l_30<2;l_30++){ //atom 3, 0th element
+//            			for(int l_31=0;l_31<2;l_31++){ //atom 3, 1st element
 //            			  for(int l_40=0;l_40<2;l_40++){ //atom 4, 0th element
 //            					for(int l_41=0;l_41<2;l_41++){ //atom 4, 1st element
               					op_list[0] = atoms[0][enum_list[l_00]]; //atom 0 0th element
@@ -354,13 +348,13 @@ int main(int argc,char *args[]){
               					op_list[3] = atoms[1][enum_list[l_11]]; //atom 1 1st element
               					op_list[4] = atoms[2][enum_list[l_20]]; //atom 2 0th element
               					op_list[5] = atoms[2][enum_list[l_21]]; //atom 2 1st element
-              					op_list[6] = atoms[3][enum_list[l_30]]; //atom 2 0th element
-              					op_list[7] = atoms[3][enum_list[l_31]]; //atom 2 1st element
+//              					op_list[6] = atoms[3][enum_list[l_30]]; //atom 2 0th element
+//              					op_list[7] = atoms[3][enum_list[l_31]]; //atom 2 1st element
 //              					op_list[8] = atoms[4][enum_list[l_40]]; //atom 2 0th element
 //              					op_list[9] = atoms[4][enum_list[l_41]]; //atom 2 1st element
-              					get_expectation_value_qvec_list(dm,&valpar,8,op_list);
-              					pos1=l_00*8+l_10*4+l_20*2+l_30;
-												pos2=l_01*8+l_11*4+l_21*2+l_31;
+              					get_expectation_value_qvec_list(dm,&valpar,6,op_list);
+              					pos1=l_00*4+l_10*2+l_20;
+												pos2=l_01*4+l_11*2+l_21;
 												if (pos1==pos2){
 													PetscPrintf(PETSC_COMM_WORLD,"%d %d %f\n",pos1,pos2,valpar);
 													diagsum=diagsum+valpar;
@@ -368,8 +362,8 @@ int main(int argc,char *args[]){
               					add_to_qvec(dm32,valpar,pos1,pos2);
 //              				}
 //                    }
-                  }
-                }
+//                  }
+//                }
             }
           }
         }
@@ -379,10 +373,6 @@ int main(int argc,char *args[]){
   assemble_qvec(dm32);
   PetscPrintf(PETSC_COMM_WORLD,"dm32 constructed\n");
   print_qvec_file(dm32,filename);
-  printf("test print_mat_sparse\n");
-  print_mat_sparse_to_file(qsys->mat_A,"quac_mat.dat"); 
-  print_mat_sparse(qsys->mat_A); 
-  
   /* print_qvec(dm32); */
 //----------------------------------------------------------------------------------------------
   create_circuit(&circ,25);
