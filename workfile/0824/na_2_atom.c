@@ -41,7 +41,7 @@ int main(int argc,char *args[]){
   /* Initialize QuaC */
   QuaC_initialize(argc,args);
   //rydberg coupling
-  b_term = 200;
+  b_term = 600;
   n_atoms = 2;
 
   //Get the bitstring we want to simulate
@@ -70,7 +70,6 @@ int main(int argc,char *args[]){
   PetscOptionsGetReal(NULL,NULL,"-delta",&delta,NULL);
   PetscOptionsGetReal(NULL,NULL,"-deltat",&deltat,NULL);
   PetscOptionsGetReal(NULL,NULL,"-length",&length,NULL);
-  PetscOptionsGetReal(NULL,NULL,"-pulse_length",&pulse_length,NULL);
   PetscOptionsGetReal(NULL,NULL,"-phase_qb0",&phase_qb0,NULL);
   PetscOptionsGetReal(NULL,NULL,"-phase_qb1",&phase_qb1,NULL);
 
