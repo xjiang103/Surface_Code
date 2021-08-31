@@ -29,6 +29,8 @@ def fun_sp(params,final_run=None):
     fidarr=[]
     earr=[]
     for i in range(8):
+        print(i)
+        print(init_state[i])
         try:
             output = subprocess.check_output(["./na_3_par_3lvl2_F","-ts_rk_type","5bs","-ts_rtol","1e-8","-ts_atol","1e-8","-n_ens","-1",
                                               "-pulse_type","ARP","-file",fnarr[i],
@@ -47,14 +49,17 @@ def fun_sp(params,final_run=None):
 
         ccz_arp = Qobj([[1,0,0,0,0,0,0,0],[0,-1,0,0,0,0,0,0],[0,0,-1,0,0,0,0,0],[0,0,0,-1,0,0,0,0],[0,0,0,0,-1,0,0,0],[0,0,0,0,0,-1,0,0],[0,0,0,0,0,0,-1,0],[0,0,0,0,0,0,0,-1]],dims=[[2,2,2],[2,2,2]])
         state_arr=[]
-        for k in range(len(init_state[i])):
-            if (init_state[k]=='0'):
+        st=init_state[i]
+        for k in range(len(st)):
+            if (st[k]=='0'):
                 state_arr.append(basis(2,0))
-            elif (init_state[k]=='1'):
+            elif (st[k]=='1'):
                 state_arr.append(basis(2,1))
             else:
                 print("Invalid input state")
-            state=tensor(state_arr[0],state_arr[1],state_arr[2])
+        state=tensor(state_arr[0],state_arr[1],state_arr[2])
+
+        #state=tensor(snot(),snot(),snot())*state
         #Apply phase gates with parameters that we are optimizing
         state = tensor(phasegate(params[2]),qeye(2),qeye(2))*state
         state = tensor(qeye(2),phasegate(params[3]),qeye(2))*state
@@ -66,10 +71,12 @@ def fun_sp(params,final_run=None):
         fid = fidelity(dm,state)
         fidarr.append(fid)
         earr.append(1-fid)
+        print(init_state[i]+' '+str(fid))
 
     meanf=np.mean(fidarr)
     return 1-fid
-
+def print_callback(xs):
+    print(xs)
 print("Optimizing ARP for b = ",str(b))
 print("Optimizing Delta, T, and phases")
 f.write(str(ddfac)+' ')
