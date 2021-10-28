@@ -14,14 +14,9 @@ args = vars(parser.parse_args())
 if args["b_couple"] is not None:
     b = args["b_couple"]
 
-typestr="cz"
-
 unique_file = str(uuid.uuid4())[0:8]
 file_name = "dm_"+unique_file+".dat" #Allow us to run in parallel
 
-f=open("op_2_arp_0902.txt","a")
-f.write('\n')
-f.write(typestr+' ')
 
 def fun_sp(params,final_run=None):
 
@@ -48,8 +43,6 @@ def fun_sp(params,final_run=None):
     print(fid)
     if(final_run):
         print("Phase: ",res.x)
-        f.write(str(res.x[0])+' ')
-        f.write(str(res.x[1])+' ')
     return 1-fid
 
 def qutip_phase(params,dm):
@@ -88,9 +81,3 @@ print("Final Fidelity: ",str(1-res.fun))
 print("Final Params: ",str(res.x))
 #Final Fidelity:  0.9997463238664505
 #Final Fidelity:  0.9997626628800216
-f.write("Delta_T_phases for b="+str(b)+' ')
-f.write(str(1-res.fun)+' ')
-print("Final Params: ",str(res.x))
-f.write(str(res.x[0])+' ')
-f.write(str(res.x[1])+' ')
-f.write('\n')

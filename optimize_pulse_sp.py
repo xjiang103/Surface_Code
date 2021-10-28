@@ -7,19 +7,19 @@ from qutip import *
 from qutip.qip.operations import snot,phasegate
 import argparse
 
-b=600
-parser = argparse.ArgumentParser(description='Optimize Pulses')
-parser.add_argument('-b','--b_couple', help='Rydberg Coupling Strength', required=False, type=float)
-args = vars(parser.parse_args())
-if args["b_couple"] is not None:
-    b = args["b_couple"]
+##b=600
+##parser = argparse.ArgumentParser(description='Optimize Pulses')
+##parser.add_argument('-b','--b_couple', help='Rydberg Coupling Strength', required=False, type=float)
+##args = vars(parser.parse_args())
+##if args["b_couple"] is not None:
+##    b = args["b_couple"]
 
 typestr="cz"
 
 unique_file = str(uuid.uuid4())[0:8]
 file_name = "dm_"+unique_file+".dat" #Allow us to run in parallel
 
-f=open("op_2_arp_0902.txt","a")
+f=open("op_2_arp_0929.txt","a")
 f.write('\n')
 f.write(typestr+' ')
 
@@ -29,11 +29,13 @@ def fun_sp(params,final_run=None):
     #Run QuaC
     try:
         output = subprocess.check_output(["./na_2_atom","-ts_rk_type","5bs","-ts_rtol","1e-8","-ts_atol","1e-8","-n_ens","-1",
-                                          "-pulse_type","ARP","-file",file_name,
-                                          "-b_term",str(b),
+                                          "-pulse_type","SP","-file",file_name,
+                                          "-b_term",str(params[2]),
                                           "-delta",str(params[0]),
-                                          "-pulse_length",str(params[1])])
+                                          "-deltat",str(params[1]),
+                                          "-dd_fac",str(ddfac)])
     except:
+
         pass
 
     #Read in the QuaC DM
@@ -77,9 +79,9 @@ def fun_arp(delta):
 
 
 
-print("Optimizing SP for b = ",str(b))
+#print("Optimizing SP for b = ",str(b))
 
-default_sp_params = [23,0.54]
+default_sp_params = [-0.5,0.2165,10]
 res = minimize(fun_sp,default_sp_params,method="nelder-mead")
 
 #get the optimal phases
@@ -88,9 +90,10 @@ print("Final Fidelity: ",str(1-res.fun))
 print("Final Params: ",str(res.x))
 #Final Fidelity:  0.9997463238664505
 #Final Fidelity:  0.9997626628800216
-f.write("Delta_T_phases for b="+str(b)+' ')
+#f.write("Delta_T_phases for b="+str(b)+' ')
 f.write(str(1-res.fun)+' ')
 print("Final Params: ",str(res.x))
 f.write(str(res.x[0])+' ')
 f.write(str(res.x[1])+' ')
+f.write(str(res.x[2])+' ')
 f.write('\n')

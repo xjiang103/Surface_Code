@@ -74,7 +74,7 @@ def fun_sp(params,final_run=None):
         print(init_state[i]+' '+str(fid))
 
     meanf=np.mean(fidarr)
-    return 1-fid
+    return 1-meanf
 def print_callback(xs):
     print(xs)
 print("Optimizing ARP for b = ",str(b))

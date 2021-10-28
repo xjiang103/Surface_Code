@@ -8,19 +8,21 @@ from qutip.qip.operations import snot,phasegate
 import argparse
 
 
-##parser = argparse.ArgumentParser(description='Optimize Pulses')
-##parser.add_argument('-b','--b_couple', help='Rydberg Coupling Strength', required=True, type=float)
-##args = vars(parser.parse_args())
-##b = args["b_couple"]
+parser = argparse.ArgumentParser(description='Optimize Pulses')
+parser.add_argument('-b','--b_couple', help='Rydberg Coupling Strength', required=True, type=float)
+args = vars(parser.parse_args())
+b = args["b_couple"]
 ddfac=1
-typestr="cz4"
+typestr="c4z"
+omg=17*np.sqrt(3/5)
 
 
 unique_file = str(uuid.uuid4())[0:8]
 file_name = "dm_"+unique_file+".dat" #Allow us to run in parallel
 params = [-0.5,0.2,10]
 
-f=open("op_5_par_0929.txt","a")
+
+f=open("op_5_arp_par.txt","a")
 f.write('\n')
 f.write(typestr+' ')
 def fun_sp(params,final_run=None):
@@ -29,10 +31,10 @@ def fun_sp(params,final_run=None):
     #Run QuaC
     try:
         output = subprocess.check_output(["./na_5_par_3lvl3","-ts_rk_type","5bs","-ts_rtol","1e-8","-ts_atol","1e-8","-n_ens","-1",
-                                          "-pulse_type","SP","-file",file_name,
-                                          "-b_term",str(params[2]),
+                                          "-pulse_type","ARP","-file",file_name,
+                                          "-b_term",str(b),
+                                          "-omega",str(omg),
                                           "-delta",str(params[0]),
-                                          "-deltat",str(params[1]),
                                           "-dd_fac",str(ddfac)])
     except:
         pass
@@ -55,7 +57,8 @@ def fun_sp(params,final_run=None):
         f.write(str(res.x[3])+' ')
         f.write(str(res.x[4])+' ')
     return 1-fid
-
+def print_callback(xs):
+    print(xs)
 def qutip_phase(params,dm):
     #define cz_arp and czz arp
     c4z_arp = Qobj(np.diag([1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1])
@@ -74,8 +77,8 @@ def qutip_phase(params,dm):
     state = tensor(qeye(2),qeye(2),qeye(2),qeye(2),phasegate(params[4]))*state
 
     #Now apply cz_arp
-    state = cz4_arp*state
-
+    state = c4z_arp*state
+    print("trace=",str(np.trace(dm)))
     #Get fidelity wrt quac dm
     fid = fidelity(dm,state)
 
@@ -86,21 +89,22 @@ def fun_arp(delta):
     return 1-fid
 
 
-#print("Optimizing SP for b = ",str(b))
+print("Optimizing ARP for b = ",str(b))
+print("Optimizing Delta, T, and phases")
 f.write(str(ddfac)+' ')
 #f.write(str(b)+' ')
+f.write("Delta_T_phases for b="+str(b)+' ')
 default_sp_params = [-0.5,0.2]
-default_sp_params = [-0.5,0.2165,60]
-res = minimize(fun_sp,default_sp_params,method="nelder-mead")
+default_sp_params = [23]
+res = minimize(fun_sp,default_sp_params,method="nelder-mead",callback=print_callback)
 
 #get the optimal phases
 fun_sp(res.x,True)
+
 print("Final Fidelity: ",str(1-res.fun))
 f.write(str(1-res.fun)+' ')
 print("Final Params: ",str(res.x))
 f.write(str(res.x[0])+' ')
-f.write(str(res.x[1])+' ')
-f.write(str(res.x[2])+' ')
 f.write('\n')
 #Final Fidelity:  0.9997463238664505
 f.close()
