@@ -1,0 +1,7 @@
+1. test cz-k with trent gate
+2. test other pulses with czk?
+
+3. Where do we want to send this
+	PRA (or better than PRA)
+	PRX-quantum
+	ask the chair
