@@ -287,6 +287,10 @@ int main(int argc,char *args[]){
 	}
 	printf("%d\n",val_init);
 	*/
+	
+	PetscInt dmposarr[8] = {0,1,3,4,9,10,12,13};
+	
+	
 
   add_to_qvec(dm,1.0,dmpos,dmpos); //start in the |111><11| state
   add_to_qvec(dmstd,1.0,dmstdpos,dmstdpos); //start in the |111><11| state
