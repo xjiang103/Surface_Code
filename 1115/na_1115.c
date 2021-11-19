@@ -21,7 +21,7 @@ operator *atomsstd;
 FILE *data_fp = NULL;
 
 int main(int argc,char *args[]){
-  PetscInt n_atoms,i,j,n_levels,n_seqgroups,max_seqgroupsize,val_init,pos1,pos2,dmpos,dmstdpos;
+  PetscInt n_atoms,i,j,n_levels,n_seqgroups,max_seqgroupsize,val_init,pos1,pos2,dmpos,dmstdpos,str_flag=0;
   PetscScalar tmp_scalar = 1.0,b_term=600,b_dr,b_0r,b_1r,gamma_r,valpar,diagsum,meas_val,gamma_t1,gamma_t2s;
   PetscInt steps_max,n_ens=0,seed=12;
   qvec dm,dmstd;
@@ -29,7 +29,7 @@ int main(int argc,char *args[]){
   PetscReal dt,time_max,measurement_time,phase_qb0=0,phase_qb1=0;
   PetscReal single_qubit_gate_time=0.1,two_qubit_gate_time=0.1,var,fidelity;
   char bitstr[PETSC_MAX_PATH_LEN] = "11"; //Default bitstr to start with
-  char pulse_type[PETSC_MAX_PATH_LEN] = "ARP",filename[PETSC_MAX_PATH_LEN]="dm.dat";
+  char pulse_type[PETSC_MAX_PATH_LEN] = "SP",filename[PETSC_MAX_PATH_LEN]="dm.dat";
   circuit circ;
   int length;
   PetscScalar omega,delta;
@@ -94,11 +94,10 @@ int main(int argc,char *args[]){
       dmstdpos += 1*pow(2,i);
       dmpos += 1*pow(3,i);
     } else {
-      PetscPrintf(PETSC_COMM_WORLD,"ERROR: Must be 0 or 1\n");
-      exit(0);
+      str_flag=1;
     }
   }
-  PetscPrintf(PETSC_COMM_WORLD,"Simulating bitstr %s with dmpos=%d and dmstdpos=%d\n",bitstr,dmpos,dmstdpos);
+  PetscPrintf(PETSC_COMM_WORLD,"Simulating bitstr %s with dmpos=%d and dmstdpos=%d, str_flag=%d\n",bitstr,dmpos,dmstdpos,str_flag);
 
   //Initialize the qsystem
   initialize_system(&qsys);
@@ -269,14 +268,26 @@ int main(int argc,char *args[]){
   create_qvec_sys(qsys,&(dm));
   create_qvec_sys(qsys,&(dm_dummy));
 
-  add_to_qvec(dm,1.0,dmpos,dmpos); //start in the |111><11| state
-  add_to_qvec(dmstd,1.0,dmstdpos,dmstdpos); //start in the |111><11| state
+  if (str_flag==0){
+     add_to_qvec(dm,1.0,dmpos,dmpos); //start in the |111><11| state
+     add_to_qvec(dmstd,1.0,dmstdpos,dmstdpos); //start in the |111><11| state
+     }
+  else{
+     add_to_qvec(dm,sqrt(0.25),0,0);
+     add_to_qvec(dm,sqrt(0.25),1,1);
+     add_to_qvec(dm,sqrt(0.25),3,3);
+     add_to_qvec(dm,sqrt(0.25),4,4);
+     
+     //add_to_qvec(dm,sqrt(0.5),0,0);
+     //add_to_qvec(dm,sqrt(0.5),4,4);
+       }
+
 
   assemble_qvec(dm);
   assemble_qvec(dmstd);
   //Apply gates to the atoms qubits
-  apply_1q_na_gate_to_qvec(dm,HADAMARD,atoms[0][zero]); //apply H to atom 0
-  apply_1q_na_gate_to_qvec(dm,HADAMARD,atoms[1][zero]); //apply H to atom 1
+  //apply_1q_na_gate_to_qvec(dm,HADAMARD,atoms[0][zero]); //apply H to atom 0
+  //apply_1q_na_gate_to_qvec(dm,HADAMARD,atoms[1][zero]); //apply H to atom 1
 
   time_max = time_max + measurement_time; //100us
   dt        = 0.01;

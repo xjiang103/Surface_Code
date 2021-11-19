@@ -127,7 +127,7 @@ int main(int argc,char *args[]){
     create_op_sys(qsysstd,2,&(atomsstd[i]));
   }
 
-  data_fp = fopen("na3_3lvl.dat","w");
+  data_fp = fopen("na_1117_3a.txt","w");
   
   //Add hamiltonian terms
 

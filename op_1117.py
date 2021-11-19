@@ -19,7 +19,7 @@ typestr="cz"
 unique_file = str(uuid.uuid4())[0:8]
 file_name = "dm_"+unique_file+".dat" #Allow us to run in parallel
 
-f=open("op_2_arp_0929.txt","a")
+f=open("op_2_sp_1117.txt","a")
 f.write('\n')
 f.write(typestr+' ')
 
@@ -32,10 +32,8 @@ def fun_sp(params,final_run=None):
                                           "-pulse_type","SP","-file",file_name,
                                           "-b_term",str(b),
                                           "-delta",str(params[0]),
-                                          "-deltat",str(params[1]),
-                                          "-dd_fac",str(ddfac)])
+                                          "-deltat",str(params[1])])
     except:
-
         pass
 
     #Read in the QuaC DM
@@ -67,7 +65,7 @@ def qutip_phase(params,dm):
 
     #Now apply cz_arp
     state = cz_arp*state
-    print("trace=",str(np.trace(dm)))
+    #print("trace=",str(np.trace(dm)))
     #Get fidelity wrt quac dm
     fid = fidelity(dm,state)
 
@@ -79,9 +77,9 @@ def fun_arp(delta):
 
 
 
-#print("Optimizing SP for b = ",str(b))
+print("Optimizing SP for b = ",str(b))
 
-default_sp_params = [0.5,0.2165]
+default_sp_params = [-0.5,0.2165]
 res = minimize(fun_sp,default_sp_params,method="nelder-mead")
 
 #get the optimal phases
@@ -90,10 +88,9 @@ print("Final Fidelity: ",str(1-res.fun))
 print("Final Params: ",str(res.x))
 #Final Fidelity:  0.9997463238664505
 #Final Fidelity:  0.9997626628800216
-#f.write("Delta_T_phases for b="+str(b)+' ')
+f.write("Delta_T_phases for b="+str(b)+' ')
 f.write(str(1-res.fun)+' ')
 print("Final Params: ",str(res.x))
 f.write(str(res.x[0])+' ')
 f.write(str(res.x[1])+' ')
-#f.write(str(res.x[2])+' ')
 f.write('\n')

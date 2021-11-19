@@ -83,7 +83,7 @@ def fun_sp(params,final_run=None):
 
     #Run QuaC
     try:
-        output = subprocess.check_output(["./na_3_F","-ts_rk_type","5bs","-ts_rtol","1e-8","-ts_atol","1e-8","-n_ens","-1",
+        output = subprocess.check_output(["./na_3_F_par_1117","-ts_rk_type","5bs","-ts_rtol","1e-8","-ts_atol","1e-8","-n_ens","-1",
                                           "-pulse_type","ARP","-file",file_name,
                                           "-bitstr",str_arr[ist],
                                           "-b_term",str(b),

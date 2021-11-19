@@ -18,21 +18,14 @@ print("initial state is "+str(ist))
 ddfac=1
 typestr="ccz"
 
-
 unique_file = str(uuid.uuid4())[0:8]
 file_name = "dm_"+unique_file+".dat" #Allow us to run in parallel
-params = [23]
-#b=100
-f=open("arp_3_F.txt","a")
+
+f=open("arp_2_F.txt","a")
 f.write('\n')
 f.write("initial state="+str(ist)+'\n')
 f.write(typestr+' ')
 
-#--------------------------------------------------
-#init_arr is an arry of initial states
-#str_arr is an arry of strings, to be used in calling the QuaC program
-
-#enumerate the basis states
 def ia(init_state):
     state_arr=[]
     for k in range(len(init_state)):
@@ -40,50 +33,29 @@ def ia(init_state):
             state_arr.append(basis(2,0))
         elif (init_state[k]=='1'):
             state_arr.append(basis(2,1))
-    state=tensor(state_arr[0],state_arr[1],state_arr[2])
+    state=tensor(state_arr[0],state_arr[1])
     return state
 init_arr=[]
 str_arr=[]
-for j1 in range(2):
-    for j2 in range(2):
-        for j3 in range(2):
-            initstr=""
-            if (j1==0):
-                initstr=initstr+'0'
-            elif (j1==1):
-                initstr=initstr+'1'
-            if (j2==0):
-                initstr=initstr+'0'
-            elif (j2==1):
-                initstr=initstr+'1'
-            if (j3==0):
-                initstr=initstr+'0'
-            elif (j3==1):
-                initstr=initstr+'1'
-            str_arr.append(initstr)
-            init_arr.append(ia(initstr))
-ave_state=0
 
-#add the additional superposition state
-for j in range(8):
-    ave_state+=(1/np.sqrt(8))*init_arr[j]
+init_arr.append(ia("00"))
+init_arr.append(ia("01"))
+init_arr.append(ia("10"))
+init_arr.append(ia("11"))
+ave_state=(1.0/np.sqrt(4))*(init_arr[0]+init_arr[1]+init_arr[2]+init_arr[3])
+#ave_state=(1.0/np.sqrt(2))*(init_arr[0]+init_arr[1])
 init_arr.append(ave_state)
-str_arr.append("xxx")
 
+str_arr=["00","01","10","11","xx"]
+#str_arr=["00","11","xx"]
 init_state=init_arr[ist]
-
-print("init_state is the "+str_arr[ist]+"th basis state. ")
-print("init state:")
-print(init_state)
-#----------------------------------------------
-
-
+print("initial state is "+str_arr[ist])
 def fun_sp(params,final_run=None):
 
 
     #Run QuaC
     try:
-        output = subprocess.check_output(["./na_3_F","-ts_rk_type","5bs","-ts_rtol","1e-8","-ts_atol","1e-8","-n_ens","-1",
+        output = subprocess.check_output(["./na_1115","-ts_rk_type","5bs","-ts_rtol","1e-8","-ts_atol","1e-8","-n_ens","-1",
                                           "-pulse_type","ARP","-file",file_name,
                                           "-bitstr",str_arr[ist],
                                           "-b_term",str(b),
@@ -94,12 +66,12 @@ def fun_sp(params,final_run=None):
         pass
 
     #Read in the QuaC DM
-    dm = Qobj(np.loadtxt(file_name).view(complex),dims=[[2,2,2],[2,2,2]])
+    dm = Qobj(np.loadtxt(file_name).view(complex),dims=[[2,2],[2,2]])
     #Remove file
     os.remove(file_name)
 
     #QUTIP to get perfect circuit
-    res = minimize(qutip_phase,[0,0,0],method="COBYLA",args=(dm))
+    res = minimize(qutip_phase,[0,0],method="COBYLA",args=(dm))
 
     fid = 1-res.fun
     print(fid)
@@ -107,24 +79,23 @@ def fun_sp(params,final_run=None):
         print("Phase: ",res.x)
         f.write(str(res.x[0])+' ')
         f.write(str(res.x[1])+' ')
-        f.write(str(res.x[2])+' ')
     return 1-fid
-def print_callback(xs):
-    print(xs)
+
 def qutip_phase(params,dm):
-    #define cz_arp and czz arp
-    ccz_arp = Qobj([[1,0,0,0,0,0,0,0],[0,-1,0,0,0,0,0,0],[0,0,-1,0,0,0,0,0],[0,0,0,-1,0,0,0,0],[0,0,0,0,-1,0,0,0],[0,0,0,0,0,-1,0,0],[0,0,0,0,0,0,-1,0],[0,0,0,0,0,0,0,-1]],dims=[[2,2,2],[2,2,2]])
-    czz_arp = Qobj([[1,0,0,0,0,0,0,0],[0,-1,0,0,0,0,0,0],[0,0,-1,0,0,0,0,0],[0,0,0,1,0,0,0,0],[0,0,0,0,1,0,0,0],[0,0,0,0,0,1,0,0],[0,0,0,0,0,0,1,0],[0,0,0,0,0,0,0,1]],dims=[[2,2,2],[2,2,2]])
-    
+    #define cz_arp
+    cz_arp = Qobj([[1,0,0,0],[0,-1,0,0],[0,0,-1,0],[0,0,0,-1]],dims=[[2,2],[2,2]])
+
+    #Get two hadamard state
+    #state = tensor(snot(),snot())*tensor(basis(2,0),basis(2,0))
     state=init_state
+
     #Apply phase gates with parameters that we are optimizing
-    state = tensor(phasegate(params[0]),qeye(2),qeye(2))*state
-    state = tensor(qeye(2),phasegate(params[1]),qeye(2))*state
-    state = tensor(qeye(2),qeye(2),phasegate(params[2]))*state
+    state = tensor(qeye(2),phasegate(params[0]))*state
+    state = tensor(phasegate(params[1]),qeye(2))*state
 
     #Now apply cz_arp
-    state = ccz_arp*state
-
+    state = cz_arp*state
+    #print("trace=",str(np.trace(dm)))
     #Get fidelity wrt quac dm
     fid = fidelity(dm,state)
 
@@ -135,18 +106,14 @@ def fun_arp(delta):
     return 1-fid
 
 
-print("Optimizing ARP for b = ",str(b))
-print("Optimizing Delta, T, and phases")
-f.write(str(ddfac)+' ')
-#f.write(str(b)+' ')
-f.write("Delta_T_phases for b="+str(b)+' ')
-default_sp_params = [-0.5,0.2]
+
+print("Optimizing SP for b = ",str(b))
+
 default_sp_params = [23,0.54]
-res = minimize(fun_sp,default_sp_params,method="nelder-mead",callback=print_callback)
+res = minimize(fun_sp,default_sp_params,method="nelder-mead")
 
 #get the optimal phases
 fun_sp(res.x,True)
-
 print("Final Fidelity: ",str(1-res.fun))
 f.write(str(1-res.fun)+' ')
 print("Final Params: ",str(res.x))
@@ -154,5 +121,4 @@ f.write(str(res.x[0])+' ')
 f.write(str(res.x[1])+' ')
 f.write('\n')
 #Final Fidelity:  0.9997463238664505
-f.close()
-
+#Final Fidelity:  0.9997626628800216

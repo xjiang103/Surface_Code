@@ -10,31 +10,84 @@ import argparse
 
 parser = argparse.ArgumentParser(description='Optimize Pulses')
 parser.add_argument('-b','--b_couple', help='Rydberg Coupling Strength', required=True, type=float)
+#parser.add_argument('-ist','--initial_state', help='Variation in Rydberg Coupling Strength', required=True, type=int)
 args = vars(parser.parse_args())
 b = args["b_couple"]
+#ist=args["initial_state"]
+#print("initial state is "+str(ist))
 ddfac=1
 typestr="ccz"
 
-fnarr=[]
-for i in range(8):  
-    unique_file = str(uuid.uuid4())[0:8]
-    file_name = "dm_"+unique_file+".dat" #Allow us to run in parallel
-    fnarr.append(file_name)
-init_state=["000","001","010","011","100","101","110","111"]
 
-f=open("op_3_arp_par_F2.txt","a")
+unique_file = str(uuid.uuid4())[0:8]
+file_name = "dm_"+unique_file+".dat" #Allow us to run in parallel
+params = [23]
+#b=100
+f=open("arp_3_F_ave.txt","a")
 f.write('\n')
+#f.write("initial state="+str(ist)+'\n')
 f.write(typestr+' ')
-def fun_sp(params,final_run=None):
-    fidarr=[]
-    earr=[]
-    for i in range(8):
-        print(i)
-        print(init_state[i])
+
+#--------------------------------------------------
+def ia(init_state):
+    state_arr=[]
+    for k in range(len(init_state)):
+        if (init_state[k]=='0'):
+            state_arr.append(basis(2,0))
+        elif (init_state[k]=='1'):
+            state_arr.append(basis(2,1))
+    state=tensor(state_arr[0],state_arr[1],state_arr[2])
+    return state
+init_arr=[]
+str_arr=[]
+
+#init_arr is an arry of initial states
+#str_arr is an arry of strings, to be used in calling the QuaC program
+
+#enumerate the basis states
+for j1 in range(2):
+    for j2 in range(2):
+        for j3 in range(2):
+            initstr=""
+            if (j1==0):
+                initstr=initstr+'0'
+            elif (j1==1):
+                initstr=initstr+'1'
+            if (j2==0):
+                initstr=initstr+'0'
+            elif (j2==1):
+                initstr=initstr+'1'
+            if (j3==0):
+                initstr=initstr+'0'
+            elif (j3==1):
+                initstr=initstr+'1'
+            str_arr.append(initstr)
+            init_arr.append(ia(initstr))
+ave_state=0
+
+#add the additional superposition state
+for j in range(8):
+    ave_state+=(1/np.sqrt(8))*init_arr[j]
+init_arr.append(ave_state)
+str_arr.append("xxx")
+
+#--------------------------------------------------------
+
+#init_state=init_arr[ist]
+
+#print("init_state is the "+str_arr[ist]+"th basis state. ")
+#print("init state:")
+#print(init_state)
+#----------------------------------------------
+
+def run_job(i):
+        unique_file = str(uuid.uuid4())[0:8]
+        file_name = "dm_"+unique_file+".dat" #Allow us to run in parallel
+        #Run QuaC
         try:
-            output = subprocess.check_output(["./na_3_par_3lvl2_F","-ts_rk_type","5bs","-ts_rtol","1e-8","-ts_atol","1e-8","-n_ens","-1",
-                                              "-pulse_type","ARP","-file",fnarr[i],
-                                              "-bitstr",init_state[i],
+            output = subprocess.check_output(["./na_3_F","-ts_rk_type","5bs","-ts_rtol","1e-8","-ts_atol","1e-8","-n_ens","-1",
+                                              "-pulse_type","ARP","-file",file_name,
+                                              "-bitstr",str_arr[i],
                                               "-b_term",str(b),
                                               "-delta",str(params[0]),
                                               "-pulse_length",str(params[1]),
@@ -43,47 +96,60 @@ def fun_sp(params,final_run=None):
             pass
 
         #Read in the QuaC DM
-        dm = Qobj(np.loadtxt(fnarr[i]).view(complex),dims=[[2,2,2],[2,2,2]])
+        #dm_arr.append(Qobj(np.loadtxt(file_name).view(complex),dims=[[2,2,2],[2,2,2]]))
         #Remove file
-        os.remove(fnarr[i])
+        os.remove(file_name)
+        return Qobj(np.loadtxt(file_name).view(complex),dims=[[2,2,2],[2,2,2]])
 
-        ccz_arp = Qobj([[1,0,0,0,0,0,0,0],[0,-1,0,0,0,0,0,0],[0,0,-1,0,0,0,0,0],[0,0,0,-1,0,0,0,0],[0,0,0,0,-1,0,0,0],[0,0,0,0,0,-1,0,0],[0,0,0,0,0,0,-1,0],[0,0,0,0,0,0,0,-1]],dims=[[2,2,2],[2,2,2]])
-        state_arr=[]
-        st=init_state[i]
-        for k in range(len(st)):
-            if (st[k]=='0'):
-                state_arr.append(basis(2,0))
-            elif (st[k]=='1'):
-                state_arr.append(basis(2,1))
-            else:
-                print("Invalid input state")
-        state=tensor(state_arr[0],state_arr[1],state_arr[2])
+def fun_sp(params,final_run=None):
+    
+    results = Parallel(n_jobs=num_cores,backend="loky")(delayed(run_job)(i) for i in range(9))
+    #QUTIP to get perfect circuit
+    res = minimize(qutip_phase,[0,0,0],method="COBYLA",args=(results))
 
-        #state=tensor(snot(),snot(),snot())*state
+    fid = 1-res.fun
+    print(fid)
+    if(final_run):
+        print("Phase: ",res.x)
+        f.write(str(res.x[0])+' ')
+        f.write(str(res.x[1])+' ')
+        f.write(str(res.x[2])+' ')
+    return 1-fid
+def print_callback(xs):
+    print(xs)
+def qutip_phase(params,dm):
+    #define cz_arp and czz arp
+    ccz_arp = Qobj([[1,0,0,0,0,0,0,0],[0,-1,0,0,0,0,0,0],[0,0,-1,0,0,0,0,0],[0,0,0,-1,0,0,0,0],[0,0,0,0,-1,0,0,0],[0,0,0,0,0,-1,0,0],[0,0,0,0,0,0,-1,0],[0,0,0,0,0,0,0,-1]],dims=[[2,2,2],[2,2,2]])
+    czz_arp = Qobj([[1,0,0,0,0,0,0,0],[0,-1,0,0,0,0,0,0],[0,0,-1,0,0,0,0,0],[0,0,0,1,0,0,0,0],[0,0,0,0,1,0,0,0],[0,0,0,0,0,1,0,0],[0,0,0,0,0,0,1,0],[0,0,0,0,0,0,0,1]],dims=[[2,2,2],[2,2,2]])
+    fid=0
+    for i in range(9):
+        state=init_arr[i]
         #Apply phase gates with parameters that we are optimizing
-        state = tensor(phasegate(params[2]),qeye(2),qeye(2))*state
-        state = tensor(qeye(2),phasegate(params[3]),qeye(2))*state
-        state = tensor(qeye(2),qeye(2),phasegate(params[4]))*state
+        state = tensor(phasegate(params[0]),qeye(2),qeye(2))*state
+        state = tensor(qeye(2),phasegate(params[1]),qeye(2))*state
+        state = tensor(qeye(2),qeye(2),phasegate(params[2]))*state
+
         #Now apply cz_arp
         state = ccz_arp*state
 
         #Get fidelity wrt quac dm
-        fid = fidelity(dm,state)
-        fidarr.append(fid)
-        earr.append(1-fid)
-        print(init_state[i]+' '+str(fid))
+        fid_tmp = fidelity(dm,state)
+        fid=fid+fid_tmp/9.0
 
-    meanf=np.mean(fidarr)
-    return 1-meanf
-def print_callback(xs):
-    print(xs)
+    return 1-fid
+
+def fun_arp(delta):
+    #NOT COMPLETED!
+    return 1-fid
+
+
 print("Optimizing ARP for b = ",str(b))
 print("Optimizing Delta, T, and phases")
 f.write(str(ddfac)+' ')
 #f.write(str(b)+' ')
 f.write("Delta_T_phases for b="+str(b)+' ')
 default_sp_params = [-0.5,0.2]
-default_sp_params = [23,0.54,0,0,0]
+default_sp_params = [23,0.54]
 res = minimize(fun_sp,default_sp_params,method="nelder-mead",callback=print_callback)
 
 #get the optimal phases
@@ -94,9 +160,6 @@ f.write(str(1-res.fun)+' ')
 print("Final Params: ",str(res.x))
 f.write(str(res.x[0])+' ')
 f.write(str(res.x[1])+' ')
-f.write(str(res.x[2])+' ')
-f.write(str(res.x[3])+' ')
-f.write(str(res.x[4])+' ')
 f.write('\n')
 #Final Fidelity:  0.9997463238664505
 f.close()
