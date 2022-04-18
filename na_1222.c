@@ -33,12 +33,12 @@ int main(int argc,char *args[]){
 
   PetscInt n_atoms,i,n_levels,n_seqgroups,max_seqgroupsize,val_init,pos1,pos2,dmpos,dmstdpos;
   PetscScalar tmp_scalar = 1.0,b_field,b_dr,b_0r,b_1r,gamma_r,valpar,diagsum;
-  PetscInt steps_max,n_ens=-1;
+  PetscInt steps_max,n_ens=0;
   qvec dm,dmstd;
   qsystem qsys,qsysstd;
   PetscReal dt,time_max;
   PetscReal single_qubit_gate_time=0.1,two_qubit_gate_time=0.1,var,fidelity;
-  char bitstr[PETSC_MAX_PATH_LEN] = "111"; //Default bitstr to start with
+  char bitstr[PETSC_MAX_PATH_LEN] = "110"; //Default bitstr to start with
   circuit circ;
   int length;
   //PulseParams pulse_params[2]; //moved to line 61
@@ -127,7 +127,7 @@ int main(int argc,char *args[]){
     create_op_sys(qsysstd,2,&(atomsstd[i]));
   }
 
-  data_fp = fopen("na_1117_3a.txt","w");
+  data_fp = fopen("na_1222.txt","w");
   
   //Add hamiltonian terms
 

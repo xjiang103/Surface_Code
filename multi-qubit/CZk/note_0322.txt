@@ -1,0 +1,8 @@
+1.
+
+table 1 explain T
+
+
+F = 0.98
+
+F_SP = 0.91
