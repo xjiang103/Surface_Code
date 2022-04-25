@@ -32,7 +32,7 @@ if (ptnum==1):
     phasearr=[2.18016434,-3.13552147,-3.13587138,-3.13539747,-3.13570812] 
 elif (ptnum==2):
     ptype="SP"
-    default_sp_params = [2.09986833,0.03401308]
+    default_sp_params = [0.5045,0.222222]
     para1str="-deltat"
     phasearr=[0,0,0,0,0]
 else:
