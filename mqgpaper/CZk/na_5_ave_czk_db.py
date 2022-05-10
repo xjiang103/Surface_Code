@@ -180,7 +180,7 @@ def qutip_phase(params,dms):
         state = cz4_arp*state
 
         #Get fidelity wrt quac dm
-        fid_tmp = (fidelity(dms[i],state))**2
+        fid_tmp = (fidelity(dms[i],state))
         leak_tmp = (np.trace(dms[i])).real
         print(str(i)+' '+str(fid_tmp))
         print(str(i)+' '+str(leak_tmp))

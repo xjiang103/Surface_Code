@@ -195,7 +195,8 @@ f.write(str(ddfac)+' ')
 #f.write(str(b)+' ')
 f.write("Delta_T_phases for b="+str(b)+' ')
 
-res = minimize(fun_sp,default_sp_params,method="nelder-mead",callback=print_callback)
+res = minimize(fun_sp,default_sp_params,method="nelder-mead",bounds=[(0,10),(0.1,0.8)],callback=print_callback)
+
 
 #get the optimal phases
 fun_sp(res.x,True)
