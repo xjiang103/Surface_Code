@@ -22,7 +22,7 @@ plt.plot(dbarr3,farr3,'o-',label="3")
 plt.plot(dbarr4,farr4,'o-',label="4")
 plt.legend(loc='lower right',  ncol=3, columnspacing=1.5)
 plt.ylim([0.9970,1])
-plt.xlabel("Min(Β) (MHz)")
+plt.xlabel("Min(Β) (2π MHz)")
 plt.ylabel("Fidelity")
 #plt.title("F vs min(Β)")
 

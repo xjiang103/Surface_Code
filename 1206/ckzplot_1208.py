@@ -59,7 +59,7 @@ plt.plot(barr,farr,'o-',label="4")
 #plt.plot(barr,leakarr,'o-',label="Leakage")
 
 plt.legend(loc='lower right', prop={'size': 8}, ncol=3)
-plt.xlabel("Β (MHz)")
+plt.xlabel("Β (2π MHz)")
 plt.ylabel("Fidelity")
 
 filestr='fidplot.png'
