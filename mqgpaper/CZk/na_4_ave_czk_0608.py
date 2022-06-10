@@ -12,41 +12,33 @@ from joblib import Parallel, delayed
 parser = argparse.ArgumentParser(description='Optimize Pulses')
 parser.add_argument('-b','--b_couple', help='Rydberg Coupling Strength', required=True, type=float)
 parser.add_argument('-pt','--pulse_type', help='pulse type', required=True, type=int)
-parser.add_argument('-dfac','--ddfac_num', help='datadata coupling strength', required=True, type=float)
 args = vars(parser.parse_args())
 b = args["b_couple"]
 ptnum = args["pulse_type"]
 #ist=args["initial_state"]
 #print("initial state is "+str(ist))
-ddfac=args["ddfac_num"]
+ddfac=0
 typestr="cccz"
 default_sp_params = [0.5045,0.222222]
 ptype="SP"
 para1str="deltat"
-phasearr=[0,0,0]
 
 if (ptnum==1):
     ptype="ARP"
-    default_sp_params = [33.49771809,  0.61737785]
+    default_sp_params = [23,0.54]
     para1str="-pulse_length"
-    phasearr=[ 2.83180159, -0.12513822, -0.12550201]
 elif (ptnum==2):
     ptype="SP"
-    default_sp_params = [0.2275566,0.3159306]
     para1str="-deltat"
-    phasearr=[ 1.55788356,-1.45144714,-1.45153465] 
+    default_sp_params = [0.5045,0.222222]
 else:
     print("pulse type error, must be 1 or 2")
-#print(phasearr)
-#print(para1str)
-print("ddfac="+str(ddfac))
 
 unique_file = str(uuid.uuid4())[0:8]
 file_name = "dm_"+unique_file+".dat" #Allow us to run in parallel
 params = [23]
 #b=100
-filestr=ptype+"3_czk_check.txt"
-f=open(filestr,"a")
+f=open("arp_4_F_ave.txt","a")
 f.write('\n')
 f.write(ptype+' ')
 f.write(str(default_sp_params[0])+' ')
@@ -62,10 +54,11 @@ def ia(init_state):
             state_arr.append(basis(2,0))
         elif (init_state[k]=='1'):
             state_arr.append(basis(2,1))
-    state=tensor(state_arr[0],state_arr[1],state_arr[2])
+    state=tensor(state_arr[0],state_arr[1],state_arr[2],state_arr[3])
     return state
 init_arr=[]
 str_arr=[]
+
 #init_arr is an arry of initial states
 #str_arr is an arry of strings, to be used in calling the QuaC program
 
@@ -73,28 +66,33 @@ str_arr=[]
 for j1 in range(2):
     for j2 in range(2):
         for j3 in range(2):
-            initstr=""
-            if (j1==0):
-                initstr=initstr+'0'
-            elif (j1==1):
-                initstr=initstr+'1'
-            if (j2==0):
-                initstr=initstr+'0'
-            elif (j2==1):
-                initstr=initstr+'1'
-            if (j3==0):
-                initstr=initstr+'0'
-            elif (j3==1):
-                initstr=initstr+'1'
-            str_arr.append(initstr)
-            init_arr.append(ia(initstr))
+            for j4 in range(2):
+                initstr=""
+                if (j1==0):
+                    initstr=initstr+'0'
+                elif (j1==1):
+                    initstr=initstr+'1'
+                if (j2==0):
+                    initstr=initstr+'0'
+                elif (j2==1):
+                    initstr=initstr+'1'
+                if (j3==0):
+                    initstr=initstr+'0'
+                elif (j3==1):
+                    initstr=initstr+'1'
+                if (j4==0):
+                    initstr=initstr+'0'
+                elif (j4==1):
+                    initstr=initstr+'1'
+                str_arr.append(initstr)
+                init_arr.append(ia(initstr))
 ave_state=0
 
 #add the additional superposition state
-for j in range(8):
-    ave_state+=(1/np.sqrt(8))*init_arr[j]
+for j in range(16):
+    ave_state+=(1/np.sqrt(16))*init_arr[j]
 init_arr.append(ave_state)
-str_arr.append("xxx")
+str_arr.append("xxxx")
 
 #--------------------------------------------------------
 
@@ -110,7 +108,7 @@ def run_job(i,params):
         file_name = "dm_"+unique_file+".dat" #Allow us to run in parallel
         #Run QuaC
         try:
-            output = subprocess.check_output(["./na_3_F_par","-ts_rk_type","5bs","-ts_rtol","1e-8","-ts_atol","1e-8","-n_ens","-1",
+            output = subprocess.check_output(["./na_4_F_par_0309","-ts_rk_type","5bs","-ts_rtol","1e-8","-ts_atol","1e-8","-n_ens","-1",
                                               "-pulse_type",ptype,"-file",file_name,
                                               "-bitstr",str_arr[i],
                                               "-b_term",str(b),
@@ -118,7 +116,7 @@ def run_job(i,params):
                                               para1str,str(params[1]),
                                               "-dd_fac",str(ddfac)])
         except:
-            output = subprocess.check_output(["./na_3_F_par","-ts_rk_type","5bs","-ts_rtol","1e-8","-ts_atol","1e-8","-n_ens","-1",
+            output = subprocess.check_output(["./na_4_F_par_0309","-ts_rk_type","5bs","-ts_rtol","1e-8","-ts_atol","1e-8","-n_ens","-1",
                                               "-pulse_type",ptype,"-file",file_name,
                                               "-bitstr",str_arr[i],
                                               "-b_term",str(b),
@@ -132,78 +130,88 @@ def run_job(i,params):
         #Read in the QuaC DM
         #dm_arr.append(Qobj(np.loadtxt(file_name).view(complex),dims=[[2,2,2],[2,2,2]]))
 
-        dm = Qobj(np.loadtxt(file_name).view(complex),dims=[[2,2,2],[2,2,2]])
+        dm = Qobj(np.loadtxt(file_name).view(complex),dims=[[2,2,2,2],[2,2,2,2]])
         #Remove file
         os.remove(file_name)
         return dm
 
 def fun_sp(params,final_run=None):
 
-    results = Parallel(n_jobs=9,backend="loky")(delayed(run_job)(i,params) for i in range(9))
+    results = Parallel(n_jobs=17,backend="loky")(delayed(run_job)(i,params) for i in range(17))
     #QUTIP to get perfect circuit
-    res = qutip_phase(phasearr,results)
+    res = minimize(qutip_phase,[0,0,0,0],method="COBYLA",args=(results))
 
-    fid = 1-res[0]
+    fid = 1-res.fun
     print(fid)
-    return res
+    if(final_run):
+        print("Phase: ",res.x)
+        f.write(str(res.x[0])+' ')
+        f.write(str(res.x[1])+' ')
+        f.write(str(res.x[2])+' ')
+        f.write(str(res.x[3])+' ')
+    return 1-fid
 def print_callback(xs):
     print(xs)
 
 def qutip_phase(params,dms):
     #define cz_arp and czz arp
-    ccz = Qobj([[1,0,0,0,0,0,0,0],[0,-1,0,0,0,0,0,0],[0,0,-1,0,0,0,0,0],[0,0,0,-1,0,0,0,0],[0,0,0,0,-1,0,0,0],[0,0,0,0,0,-1,0,0],[0,0,0,0,0,0,-1,0],[0,0,0,0,0,0,0,-1]],dims=[[2,2,2],[2,2,2]])
-    czz = Qobj([[1,0,0,0,0,0,0,0],[0,-1,0,0,0,0,0,0],[0,0,-1,0,0,0,0,0],[0,0,0,1,0,0,0,0],[0,0,0,0,1,0,0,0],[0,0,0,0,0,1,0,0],[0,0,0,0,0,0,1,0],[0,0,0,0,0,0,0,1]],dims=[[2,2,2],[2,2,2]])
-
+    cccz_arp = Qobj(np.diag([1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1])
+                   ,dims=[[2,2,2,2],[2,2,2,2]])
+    czzz_arp = Qobj(np.diag([1,-1,-1,1,-1,1,1,-1,-1,-1,-1,1,-1,1,1,-1])
+                   ,dims=[[2,2,2,2],[2,2,2,2]])
     fid=0
     fid_m=1
-    leakage=0
+    #leakage=0
     fid_tmp=0
-    f.write('\n')
-    for i in range(9):
+    for i in range(17):
         state=init_arr[i]
         #Apply phase gates with parameters that we are optimizing
-        state = tensor(phasegate(params[0]),qeye(2),qeye(2))*state
-        state = tensor(qeye(2),phasegate(params[1]),qeye(2))*state
-        state = tensor(qeye(2),qeye(2),phasegate(params[2]))*state
+        state = tensor(phasegate(params[0]),qeye(2),qeye(2),qeye(2))*state
+        state = tensor(qeye(2),phasegate(params[1]),qeye(2),qeye(2))*state
+        state = tensor(qeye(2),qeye(2),phasegate(params[2]),qeye(2))*state
+        state = tensor(qeye(2),qeye(2),qeye(2),phasegate(params[3]))*state
 
         #Now apply cz_arp
-        state = czz*state
+        state = czzz_arp*state
 
         #Get fidelity wrt quac dm
         fid_tmp = (fidelity(dms[i],state))
-        leak_tmp = (np.trace(dms[i])).real
-        print(str(i)+' '+str(fid_tmp))
+        #leak_tmp = (np.trace(dms[i])).real
+        #print(str(i)+' '+str(fid_tmp))
         #print(str(i)+' '+str(leak_tmp))
-        fid=fid+fid_tmp/9.0
+        fid=fid+fid_tmp/17.0
         fid_m=fid_m*fid_tmp
-        leakage=leakage+leak_tmp/9.0
-        f.write(str(fid_tmp)+'\n')
+        #leakage=leakage+leak_tmp/17.0
+        #f.write(str(fid_tmp)+'\n')
     fid_m=fid_m/fid_tmp
-    lambda1=1-(1-fid_m**8)/(1-fid_tmp*fid_m**8)
-    fg=1/8+7/8*fid_m*fid_tmp
+    lambda1=1-(1-fid_m**16)/(1-fid_tmp*fid_m**16)
+    fg=1/16+15/16*fid_m*fid_tmp
     f_final=lambda1*fg+fid*(1-lambda1)
-    print("lambda is "+str(lambda1)+", F="+str(f_final)+"\n")
-    f.write('\n')
-    return [1-fid,leakage]
+    #print("lambda is "+str(lambda1)+", F="+str(f_final)+"\n")
+    #f.write('\n')
+    return 1-f_final
 
 def fun_arp(delta):
     #NOT COMPLETED!
     return 1-fid
 
 
-print("Optimizing "+ptype+" for b = ",str(b))
+print("Optimizing ARP for b = ",str(b))
 print("Optimizing Delta, T, and phases")
 f.write(str(ddfac)+' ')
 #f.write(str(b)+' ')
 f.write("Delta_T_phases for b="+str(b)+' ')
 
-res = fun_sp(default_sp_params)
-#get the optimal phases
+res = minimize(fun_sp,default_sp_params,method="nelder-mead",callback=print_callback)
 
-print("Final Fidelity: ",str(1-res[0]))
-print("Leakage="+str(res[1])+' ')
-f.write("F="+str(1-res[0])+' ')
-f.write("Leakage="+str(res[1])+' ')
+#get the optimal phases
+fun_sp(res.x,True)
+
+print("Final Fidelity: ",str(1-res.fun))
+f.write(str(1-res.fun)+' ')
+print("Final Params: ",str(res.x))
+f.write(str(res.x[0])+' ')
+f.write(str(res.x[1])+' ')
 f.write('\n')
 #Final Fidelity:  0.9997463238664505
 f.close()

@@ -24,7 +24,7 @@ unique_file = str(uuid.uuid4())[0:8]
 file_name = "dm_"+unique_file+".dat" #Allow us to run in parallel
 params = [23]
 #b=100
-f=open("arp_4_F_ave_db.txt","a")
+f=open("arp_4_ckz_check.txt","a")
 f.write('\n')
 #f.write("initial state="+str(ist)+'\n')
 f.write(typestr+' ')
@@ -132,6 +132,10 @@ cccz_arp = Qobj(np.diag([1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1])
 czzz_arp = Qobj(np.diag([1,-1,-1,1,-1,1,1,-1,-1,-1,-1,1,-1,1,1,-1])
                ,dims=[[2,2,2,2],[2,2,2,2]])
 fid=0
+fid_m=1
+leakage=0
+fid_tmp=0
+f.write('\n')
 
 params=params_phase
 for i in range(17):
@@ -146,9 +150,20 @@ for i in range(17):
     state = cccz_arp*state
 
     #Get fidelity wrt quac dm
-    fid_tmp = fidelity(dms[i],state)
+    fid_tmp = (fidelity(dms[i],state))
+    leak_tmp = (np.trace(dms[i])).real
+    print(str(i)+' '+str(fid_tmp))
+    #print(str(i)+' '+str(leak_tmp))
     fid=fid+fid_tmp/17.0
-
+    fid_m=fid_m*fid_tmp
+    leakage=leakage+leak_tmp/17.0
+    f.write(str(fid_tmp)+'\n')
+fid_m=fid_m/fid_tmp
+lambda1=1-(1-fid_m**16)/(1-fid_tmp*fid_m**16)
+fg=1/16+15/16*fid_m*fid_tmp
+f_final=lambda1*fg+fid*(1-lambda1)
+print("lambda is "+str(lambda1)+", F="+str(f_final)+"\n")
+f.write('\n')
 print("Optimizing ARP for b = ",str(b))
 print("Delta_b = ",str(deltab))
 f.write(str(b)+' '+str(deltab)+' ')
