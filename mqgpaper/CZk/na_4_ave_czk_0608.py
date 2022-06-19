@@ -38,7 +38,7 @@ unique_file = str(uuid.uuid4())[0:8]
 file_name = "dm_"+unique_file+".dat" #Allow us to run in parallel
 params = [23]
 #b=100
-f=open("arp_4_F_ave.txt","a")
+f=open("sp_4_gf.txt","a")
 f.write('\n')
 f.write(ptype+' ')
 f.write(str(default_sp_params[0])+' ')

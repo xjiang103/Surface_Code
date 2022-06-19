@@ -24,7 +24,7 @@ unique_file = str(uuid.uuid4())[0:8]
 file_name = "dm_"+unique_file+".dat" #Allow us to run in parallel
 params = [23]
 #b=100
-f=open("arp_5_F_ave.txt","a")
+f=open("arp_5_ckz_gf.txt","a")
 f.write('\n')
 #f.write("initial state="+str(ist)+'\n')
 f.write(typestr+' ')
@@ -161,11 +161,21 @@ def qutip_phase(params,dms):
         state = c4z_arp*state
 
         #Get fidelity wrt quac dm
-        fid_tmp = fidelity(dms[i],state)
+        fid_tmp = (fidelity(dms[i],state))
+        #leak_tmp = (np.trace(dms[i])).real
+        #print(str(i)+' '+str(fid_tmp))
+        #print(str(i)+' '+str(leak_tmp))
         fid=fid+fid_tmp/33.0
-
-    return 1-fid
-
+        fid_m=fid_m*fid_tmp
+        #leakage=leakage+leak_tmp/17.0
+        #f.write(str(fid_tmp)+'\n')
+    fid_m=fid_m/fid_tmp
+    lambda1=1-(1-fid_m**32)/(1-fid_tmp*fid_m**32)
+    fg=1/32+31/32*fid_m*fid_tmp
+    f_final=lambda1*fg+fid*(1-lambda1)
+    #print("lambda is "+str(lambda1)+", F="+str(f_final)+"\n")
+    #f.write('\n')
+    return 1-f_final
 def fun_arp(delta):
     #NOT COMPLETED!
     return 1-fid
