@@ -29,8 +29,8 @@ f.write('\n')
 #f.write("initial state="+str(ist)+'\n')
 f.write(typestr+' ')
 
-params_pulse=[23.95157083,0.53117221]
-params_phase=[0.56335345,0.5633543,0.56319147,0.56335745]
+params_pulse= [27.33580322,0.45806396]
+params_phase=  [0.48579231,0.48597324,0.48596129,0.48596904]
 #--------------------------------------------------
 def ia(init_state):
     state_arr=[]

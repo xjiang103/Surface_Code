@@ -1,0 +1,6 @@
+
+cccz 1 Delta_T_phases for b=200.0 
+cccz 1 Delta_T_phases for b=300.0 
+cccz 1 Delta_T_phases for b=400.0 
+cccz 1 Delta_T_phases for b=500.0 
+cccz 1 Delta_T_phases for b=600.0 

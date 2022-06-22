@@ -1,0 +1,2 @@
+Optimizing ARP for b =  300.0
+Optimizing Delta, T, and phases

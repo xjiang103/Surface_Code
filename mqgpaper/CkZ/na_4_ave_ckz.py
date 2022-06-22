@@ -169,7 +169,7 @@ def qutip_phase(params,dms):
         state = tensor(qeye(2),qeye(2),qeye(2),phasegate(params[3]))*state
 
         #Now apply cz_arp
-        state = czzz_arp*state
+        state = cccz_arp*state
 
         #Get fidelity wrt quac dm
         fid_tmp = fidelity(dms[i],state)

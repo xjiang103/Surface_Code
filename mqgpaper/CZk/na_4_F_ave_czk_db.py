@@ -27,9 +27,9 @@ phasearr=[0,0,0,0]
 
 if (ptnum==1):
     ptype="ARP"
-    default_sp_params = [17.34728195,0.77401015]
+    default_sp_params = [20.0239836,0.62671114]
     para1str="-pulse_length"
-    phasearr=[0.78051999,0.08161766,0.08144444,0.08126569] 
+    phasearr=[0.61850382, 0.06238409, 0.06235713, 0.06240313] 
 elif (ptnum==2):
     ptype="SP"
     default_sp_params = [0.49790076,0.16799145]
@@ -180,7 +180,7 @@ def qutip_phase(params,dms):
         #Get fidelity wrt quac dm
         fid_tmp = (fidelity(dms[i],state))
         leak_tmp = (np.trace(dms[i])).real
-        print(str(i)+' '+str(fid_tmp))
+        #print(str(i)+' '+str(fid_tmp))
         #print(str(i)+' '+str(leak_tmp))
         fid=fid+fid_tmp/17.0
         fid_m=fid_m*fid_tmp
@@ -190,8 +190,8 @@ def qutip_phase(params,dms):
     lambda1=1-(1-fid_m**16)/(1-fid_tmp*fid_m**16)
     fg=1/16+15/16*fid_m*fid_tmp
     f_final=lambda1*fg+fid*(1-lambda1)
-    print("lambda is "+str(lambda1)+", F="+str(f_final)+"\n")
-    f.write('\n')
+    #print("lambda is "+str(lambda1)+", F="+str(f_final)+"\n")
+    f.write(str(f_final))
     return [1-fid,leakage]
 
 def fun_arp(delta):
@@ -210,8 +210,8 @@ res = fun_sp(default_sp_params)
 
 print("Final Fidelity: ",str(1-res[0]))
 print("Leakage="+str(res[1])+' ')
-f.write("F="+str(1-res[0])+' ')
-f.write("Leakage="+str(res[1])+' ')
+#f.write("F="+str(1-res[0])+' ')
+#f.write("Leakage="+str(res[1])+' ')
 f.write('\n')
 #Final Fidelity:  0.9997463238664505
 f.close()

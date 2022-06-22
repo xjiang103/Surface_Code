@@ -27,9 +27,9 @@ phasearr=[0,0,0,0,0]
 
 if (ptnum==1):
     ptype="ARP"
-    default_sp_params = [55.83779297,2.31162535]
+    default_sp_params = [20.61916597  0.74446921]
     para1str="-pulse_length"
-    phasearr=[2.18016434,-3.13552147,-3.13587138,-3.13539747,-3.13570812] 
+    phasearr= [0.87910419, 0.00794867, 0.00781274, 0.00811204, 0.00775149]
 elif (ptnum==2):
     ptype="SP"
     default_sp_params = [0.5045,0.222222]
@@ -45,7 +45,7 @@ unique_file = str(uuid.uuid4())[0:8]
 file_name = "dm_"+unique_file+".dat" #Allow us to run in parallel
 params = [23]
 #b=100
-f=open("arp_5_ave.txt","a")
+f=open("5_czk_check.txt","a")
 f.write('\n')
 f.write(ptype+' ')
 f.write(str(default_sp_params[0])+' ')
@@ -166,7 +166,10 @@ def qutip_phase(params,dms):
     cz4_arp = Qobj(np.diag([1,-1,-1,1,-1,1,1,-1,-1,1,1,-1,1,-1,-1,1,-1,-1,-1,1,-1,1,1,-1,-1,1,1,-1,1,-1,-1,1])
                    ,dims=[[2,2,2,2,2],[2,2,2,2,2]])
     fid=0
+    fid_m=1
     leakage=0
+    fid_tmp=0
+    f.write('\n')
     for i in range(33):
         state=init_arr[i]
         #Apply phase gates with parameters that we are optimizing
@@ -182,11 +185,18 @@ def qutip_phase(params,dms):
         #Get fidelity wrt quac dm
         fid_tmp = (fidelity(dms[i],state))
         leak_tmp = (np.trace(dms[i])).real
-        print(str(i)+' '+str(fid_tmp))
-        print(str(i)+' '+str(leak_tmp))
+        #print(str(i)+' '+str(fid_tmp))
+        #print(str(i)+' '+str(leak_tmp))
         fid=fid+fid_tmp/33.0
+        fid_m=fid_m*fid_tmp
         leakage=leakage+leak_tmp/33.0
-
+        f.write(str(fid_tmp)+'\n')
+    fid_m=fid_m/fid_tmp
+    lambda1=1-(1-fid_m**32)/(1-fid_tmp*fid_m**32)
+    fg=1/32+31/32*fid_m*fid_tmp
+    f_final=lambda1*fg+fid*(1-lambda1)
+    #print("lambda is "+str(lambda1)+", F="+str(f_final)+"\n")
+    f.write(str(f_final))
     return [1-fid,leakage]
 
 def fun_arp(delta):
@@ -205,8 +215,8 @@ res = fun_sp(default_sp_params)
 
 print("Final Fidelity: ",str(1-res[0]))
 print("Leakage="+str(res[1])+' ')
-f.write("F="+str(1-res[0])+' ')
-f.write("Leakage="+str(res[1])+' ')
+#f.write("F="+str(1-res[0])+' ')
+#f.write("Leakage="+str(res[1])+' ')
 f.write('\n')
 #Final Fidelity:  0.9997463238664505
 f.close()
