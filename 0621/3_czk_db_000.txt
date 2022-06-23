@@ -1,0 +1,6 @@
+ddfac=0.0
+Optimizing ARP for b =  200.0
+Optimizing Delta, T, and phases
+0.9493546446410365
+Final Fidelity:  0.9493546446410365
+Leakage=0.9488818549704378 
