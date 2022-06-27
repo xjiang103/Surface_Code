@@ -1,0 +1,31 @@
+1. CkZ:
+
+ARP: OK for 3, 4 and 5 atoms.
+____________________________________________________________________________________
+
+2. CkZ_db unsymmetric coupling test: 
+
+ARP: OK. Similar to past results
+____________________________________________________________________________________
+3. CZk
+
+ARP:
+
+3 atoms: F=0.9889 for b=10; F increases with b for b>30, F=0. 815 for b=200
+
+random initial parameters
+
+4 atoms: F increases with b,  F=0.9886 for b=200, 
+
+5 atoms: F increases with b, F=0.985 for b=130, higher b not finished
+____________________________________________________________________________________
+
+4. CZk
+
+SP:
+
+3 atoms: F=0.993 for b=10; F decreases with b; F=0.989 for b=200
+
+4 atoms: F~0.9 for b=10 to b=200 . 
+
+5 atoms: F~0.94 for b=10 to b=200

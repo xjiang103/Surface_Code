@@ -184,8 +184,8 @@ def qutip_phase(params,dms):
         #leakage=leakage+leak_tmp/17.0
         #f.write(str(fid_tmp)+'\n')
     fid_m=fid_m/fid_tmp
-    lambda1=1-(1-fid_m**16)/(1-fid_tmp*fid_m**16)
-    fg=1/16+15/16*fid_m*fid_tmp
+    lambda1=1-(1-fid_m)/(1-fid_tmp*fid_m)
+    fg=1/17+16/17*fid_m*fid_tmp
     f_final=lambda1*fg+fid*(1-lambda1)
     #print("lambda is "+str(lambda1)+", F="+str(f_final)+"\n")
     #f.write('\n')

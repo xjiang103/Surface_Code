@@ -149,10 +149,10 @@ for i in range(9):
     fid=fid+fid_tmp/9.0
     fid_m=fid_m*fid_tmp
     leakage=leakage+leak_tmp/9.0
-    f.write(str(fid_tmp)+'\n')
+    #f.write(str(fid_tmp)+'\n')
 fid_m=fid_m/fid_tmp
-lambda1=1-(1-fid_m**8)/(1-fid_tmp*fid_m**8)
-fg=1/8+7/8*fid_m*fid_tmp
+lambda1=1-(1-fid_m)/(1-fid_tmp*fid_m)
+fg=1/9+8/9*fid_m*fid_tmp
 f_final=lambda1*fg+fid*(1-lambda1)
 print("lambda is "+str(lambda1)+", F="+str(f_final)+"\n")
 f.write('\n')
