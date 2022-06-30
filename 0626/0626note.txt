@@ -29,3 +29,7 @@ SP:
 4 atoms: F~0.9 for b=10 to b=200 . 
 
 5 atoms: F~0.94 for b=10 to b=200
+
+
+
+
