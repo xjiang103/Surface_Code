@@ -30,6 +30,21 @@ SP:
 
 5 atoms: F~0.94 for b=10 to b=200
 
+_____________________________________________________________________________________
+
+5. CZ2
+
+(1). From B=9, F=0.9958 to B=9.1, 9.2, 9.3,..., to(B=10, F=0.9890)
+
+(2). If start at a higher initial T, we have (10, 0.9966)
+
+(3). ....
+
+(4) got B=200, F=0.9955 with Delta=98.76, T=4.8855
+
+a. with fixed T
+b. 2-step optimizaiton
+
 
 
 
