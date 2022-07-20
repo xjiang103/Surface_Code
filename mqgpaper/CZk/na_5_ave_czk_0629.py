@@ -12,40 +12,42 @@ from joblib import Parallel, delayed
 parser = argparse.ArgumentParser(description='Optimize Pulses')
 parser.add_argument('-b','--b_couple', help='Rydberg Coupling Strength', required=True, type=float)
 parser.add_argument('-pt','--pulse_type', help='pulse type', required=True, type=int)
-parser.add_argument('-dfac','--ddfac_num', help='datadata coupling strength', required=True, type=float)
+parser.add_argument('-par1','--parameter1', help='parameter111', required=True, type=float)
+parser.add_argument('-par2','--parameter2', help='parameter222', required=True, type=float)
+
 args = vars(parser.parse_args())
 b = args["b_couple"]
 ptnum = args["pulse_type"]
+par1 = args["parameter1"]
+par2 = args["parameter2"]
 #ist=args["initial_state"]
 #print("initial state is "+str(ist))
-ddfac=args["ddfac_num"]
+ddfac=0
 typestr="cccz"
 default_sp_params = [0.5045,0.222222]
 ptype="SP"
 para1str="deltat"
-phasearr=[0,0,0,0,0]
 
 if (ptnum==1):
     ptype="ARP"
-    default_sp_params = [21.14263401, 0.59077074]
+    randa=random.uniform(18,28)
+    randb=random.uniform(0.2,0.8)
+    default_sp_params = [par1,par2]
     para1str="-pulse_length"
-    phasearr=  [0.58660748, 0.0070847, 0.00685846, 0.00704544, 0.00708447]
 elif (ptnum==2):
     ptype="SP"
-    default_sp_params = [0.5045,0.222222]
     para1str="-deltat"
-    phasearr=[0,0,0,0,0]
+    randa=random.uniform(0.2,0.8)
+    randb=random.uniform(0.1,0.4)
+    default_sp_params = [randa,randb]
 else:
     print("pulse type error, must be 1 or 2")
-#print(phasearr)
-#print(para1str)
-print("ddfac="+str(ddfac))
 
 unique_file = str(uuid.uuid4())[0:8]
 file_name = "dm_"+unique_file+".dat" #Allow us to run in parallel
 params = [23]
 #b=100
-f=open("5_czk_check.txt","a")
+f=open("sp_5_gf_0629.txt","a")
 f.write('\n')
 f.write(ptype+' ')
 f.write(str(default_sp_params[0])+' ')
@@ -151,11 +153,18 @@ def fun_sp(params,final_run=None):
 
     results = Parallel(n_jobs=33,backend="loky")(delayed(run_job)(i,params) for i in range(33))
     #QUTIP to get perfect circuit
-    res = qutip_phase(phasearr,results)
+    res = minimize(qutip_phase,[0,0,0,0,0],method="COBYLA",args=(results))
 
-    fid = 1-res[0]
+    fid = 1-res.fun
     print(fid)
-    return res
+    if(final_run):
+        print("Phase: ",res.x)
+        f.write(str(res.x[0])+' ')
+        f.write(str(res.x[1])+' ')
+        f.write(str(res.x[2])+' ')
+        f.write(str(res.x[3])+' ')
+        f.write(str(res.x[4])+' ')
+    return 1-fid
 def print_callback(xs):
     print(xs)
 
@@ -167,9 +176,8 @@ def qutip_phase(params,dms):
                    ,dims=[[2,2,2,2,2],[2,2,2,2,2]])
     fid=0
     fid_m=1
-    leakage=0
+    #leakage=0
     fid_tmp=0
-    f.write('\n')
     for i in range(33):
         state=init_arr[i]
         #Apply phase gates with parameters that we are optimizing
@@ -178,45 +186,47 @@ def qutip_phase(params,dms):
         state = tensor(qeye(2),qeye(2),phasegate(params[2]),qeye(2),qeye(2))*state
         state = tensor(qeye(2),qeye(2),qeye(2),phasegate(params[3]),qeye(2))*state
         state = tensor(qeye(2),qeye(2),qeye(2),qeye(2),phasegate(params[4]))*state
-
         #Now apply cz_arp
         state = cz4_arp*state
 
         #Get fidelity wrt quac dm
         fid_tmp = (fidelity(dms[i],state))
-        leak_tmp = (np.trace(dms[i])).real
+        #leak_tmp = (np.trace(dms[i])).real
         #print(str(i)+' '+str(fid_tmp))
         #print(str(i)+' '+str(leak_tmp))
         fid=fid+fid_tmp/33.0
         fid_m=fid_m*fid_tmp
-        leakage=leakage+leak_tmp/33.0
-        f.write(str(fid_tmp)+'\n')
+        #leakage=leakage+leak_tmp/17.0
+        #f.write(str(fid_tmp)+'\n')
     fid_m=fid_m/fid_tmp
     lambda1=1-(1-fid_m)/(1-fid_tmp*fid_m)
     fg=1/33+32/33*fid_m*fid_tmp
     f_final=lambda1*fg+fid*(1-lambda1)
     #print("lambda is "+str(lambda1)+", F="+str(f_final)+"\n")
-    f.write(str(f_final))
-    return [1-f_final,leakage]
-
+    #f.write('\n')
+    return 1-f_final
 def fun_arp(delta):
     #NOT COMPLETED!
     return 1-fid
 
 
-print("Optimizing "+ptype+" for b = ",str(b))
+print("Optimizing ARP for b = ",str(b))
 print("Optimizing Delta, T, and phases")
 f.write(str(ddfac)+' ')
 #f.write(str(b)+' ')
 f.write("Delta_T_phases for b="+str(b)+' ')
 
-res = fun_sp(default_sp_params)
-#get the optimal phases
+res = minimize(fun_sp,default_sp_params,method="nelder-mead",bounds=[(0,10),(0.1,0.8)],callback=print_callback)
 
-print("Final Fidelity: ",str(1-res[0]))
-print("Leakage="+str(res[1])+' ')
-#f.write("F="+str(1-res[0])+' ')
-#f.write("Leakage="+str(res[1])+' ')
+
+#get the optimal phases
+fun_sp(res.x,True)
+
+print("Final Fidelity: ",str(1-res.fun))
+f.write(str(1-res.fun)+' ')
+print("Final Params: ",str(res.x))
+f.write(str(res.x[0])+' ')
+f.write(str(res.x[1])+' ')
 f.write('\n')
 #Final Fidelity:  0.9997463238664505
 f.close()

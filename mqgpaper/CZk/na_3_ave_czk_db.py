@@ -27,9 +27,9 @@ phasearr=[0,0,0]
 
 if (ptnum==1):
     ptype="ARP"
-    default_sp_params = [36.31345123,0.40509852]
+    default_sp_params = [98.66149798, 4.88727639]
     para1str="-pulse_length"
-    phasearr=[3.81586092,0.43769905,0.4375956 ]
+    phasearr= 3.12813817, -0.00551395, -0.00544292
 elif (ptnum==2):
     ptype="SP"
     default_sp_params = [0.2275566,0.3159306]
@@ -179,12 +179,12 @@ def qutip_phase(params,dms):
         leakage=leakage+leak_tmp/9.0
         f.write(str(fid_tmp)+'\n')
     fid_m=fid_m/fid_tmp
-    lambda1=1-(1-fid_m**8)/(1-fid_tmp*fid_m**8)
-    fg=1/8+7/8*fid_m*fid_tmp
+    lambda1=1-(1-fid_m)/(1-fid_tmp*fid_m)
+    fg=1/9+8/9*fid_m*fid_tmp
     f_final=lambda1*fg+fid*(1-lambda1)
     #print("lambda is "+str(lambda1)+", F="+str(f_final)+"\n")
     f.write(str(f_final))
-    return [1-fid,leakage]
+    return [1-f_final,leakage]
 
 def fun_arp(delta):
     #NOT COMPLETED!

@@ -149,6 +149,9 @@ def qutip_phase(params,dms):
     cz4_arp = Qobj(np.diag([1,-1,-1,1,-1,1,1,-1,-1,1,1,-1,1,-1,-1,1,-1,-1,-1,1,-1,1,1,-1,-1,1,1,-1,1,-1,-1,1])
                    ,dims=[[2,2,2,2,2],[2,2,2,2,2]])
     fid=0
+    fid_m=1	
+    #leakage=0	
+    fid_tmp=0
     for i in range(33):
         state=init_arr[i]
         #Apply phase gates with parameters that we are optimizing

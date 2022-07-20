@@ -24,13 +24,13 @@ unique_file = str(uuid.uuid4())[0:8]
 file_name = "dm_"+unique_file+".dat" #Allow us to run in parallel
 params = [23]
 #b=100
-f=open("arp_4_ckz_check.txt","a")
+f=open(4_ckz_check.txt","a")
 f.write('\n')
 #f.write("initial state="+str(ist)+'\n')
 f.write(typestr+' ')
 
-params_pulse= [27.33580322,0.45806396]
-params_phase=  [0.48579231,0.48597324,0.48596129,0.48596904]
+params_pulse=  [27.16102905,0.43369409]
+params_phase=   [0.46005223, 0.45967372, 0.45985719, 0.45972049]
 #--------------------------------------------------
 def ia(init_state):
     state_arr=[]
