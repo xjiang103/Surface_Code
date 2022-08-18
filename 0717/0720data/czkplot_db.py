@@ -1,5 +1,6 @@
 from tabulate import tabulate
 import matplotlib.pyplot as plt
+from matplotlib.ticker import ScalarFormatter
 import matplotlib
 matplotlib.rcParams.update({'font.size': 12})
 plt.rcParams["figure.figsize"] = (3.375,2.375)
@@ -8,7 +9,7 @@ plt.rcParams["figure.figsize"] = (3.375,2.375)
 ##print(table)
 
 
-dbarr=[0,1e-5,2e-5,4e-5,6e-5,8e-5,10e-5]
+dbarr=[0e-5,1e-5,2e-5,4e-5,6e-5,8e-5,10e-5]
 farr2=[0.9955443515741711,
        0.9954863591312847,
        0.995298495828996,
@@ -30,15 +31,23 @@ farr4=[0.990162310397958,
        0.9892446268243918,
        0.9887608428880799,
        0.988246348844815]
-
+plt.ticklabel_format(style='sci', axis='x')
 plt.plot(dbarr,farr2,'o-',label="2")
 plt.plot(dbarr,farr3,'o-',label="3")
 plt.plot(dbarr,farr4,'o-',label="4")
 plt.legend(loc='lower right',  ncol=3, columnspacing=1.5)
 plt.ylim([0.9830,1])
-plt.xlabel("T-T coupling/C-T coupling")
+plt.xlabel("T-T/C-T coupling")
 plt.ylabel("Fidelity")
 #plt.title("F vs min(Β)")
+
+class ScalarFormatterClass(ScalarFormatter):
+   def _set_format(self):
+      self.format = "%1.2f"
+ax = plt.gca()
+xScalarFormatter = ScalarFormatterClass(useMathText=True)
+xScalarFormatter.set_powerlimits((0,0))
+ax.xaxis.set_major_formatter(xScalarFormatter)
 
 filestr='czk_dbplot_fix.png'
 plt.savefig(filestr, bbox_inches='tight',dpi=100)

@@ -10,7 +10,7 @@ n0=4
 
 hders2=["k=2,B","Sqrt(F)","Leakage","Δ","T"]
 content2=[
-            [10, 0.9955443500400134,0.9928250952361852,25.36,0.399],
+##            [10, 0.9955443500400134,0.9928250952361852,25.36,0.399],
 ##            [30,0.9986960976289034,0.9988,26.42,0.463],
 ##            [50,0.9985892618225437, 0.9995,23.87,0.510],
 ##            [70,0.9985418313335532,0.9995,23.87,0.510],
@@ -61,17 +61,18 @@ print(table)
 barr=[val[0] for val in content2]
 farr=[val[1] for val in content2]
 #leakarr=[val[2] for val in content]
-plt.plot(barr,farr,'o-',label="2")
+plt.plot(barr,farr,'o-',label="2",color='blue')
+plt.plot([10,200],[0.9955,0.9955],'--',color='blue')
 
 barr=[val[0] for val in content3]
 farr=[val[1] for val in content3]
 #leakarr=[val[2] for val in content]
-plt.plot(barr,farr,'o-',label="3")
+plt.plot(barr,farr,'o-',label="3",color='orange')
 
 barr=[val[0] for val in content4]
 farr=[val[1] for val in content4]
 #leakarr=[val[2] for val in content]
-plt.plot(barr,farr,'o-',label="4")
+plt.plot(barr,farr,'o-',label="4",color='green')
 #plt.plot(barr,leakarr,'o-',label="Leakage")
 
 plt.legend(loc='lower right', prop={'size': 8}, ncol=3)
